@@ -4,11 +4,11 @@ import path from 'path';
 import config from '../config';
 
 export const download = (attachment, cb) => {
-  let yonaFileUrl = config.YONA.SERVER + '/files/' + attachment.id;
+  let yonaFileUrl = config.YONA.FROM.SERVER + '/files/' + attachment.id;
 
   const attachmentBaseDir = path.join(config.EXPORT_BASE_DIR,
-      config.YONA.OWNER_NAME,
-      config.YONA.PROJECT_NAME,
+      config.YONA.FROM.OWNER_NAME,
+      config.YONA.FROM.PROJECT_NAME,
       config.ATTACHMENTS_DIR);
 
   fse.ensureDirSync(path.join(attachmentBaseDir, attachment.id.toString()));

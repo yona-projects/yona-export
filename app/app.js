@@ -5,25 +5,25 @@ import config from '../config';
 import { getDefaultFileName } from './utils';
 import { createHeader } from './header';
 
-let yonaProjectExportUrl = config.YONA.SERVER + '/-_-api/v1'
-    + '/owners/' + config.YONA.OWNER_NAME
-    + '/projects/' + config.YONA.PROJECT_NAME
+let yonaProjectExportUrl = config.YONA.FROM.SERVER + '/-_-api/v1'
+    + '/owners/' + config.YONA.FROM.OWNER_NAME
+    + '/projects/' + config.YONA.FROM.PROJECT_NAME
     + '/exports';
 
 unirest.get(yonaProjectExportUrl)
     .headers({
       'Accept': 'application/json',
-      'Yona-Token': config.YONA.USER_TOKEN
+      'Yona-Token': config.YONA.FROM.USER_TOKEN
     })
     .end(response => {
       if (isBadResponse(response.status)) {
-        console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', response.status, response.statusMessage);
+        console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', yonaProjectExportUrl, response.status, response.statusMessage);
         process.exit(1);
       }
       const exportDir = path.join(
           config.EXPORT_BASE_DIR,
-          config.YONA.OWNER_NAME,
-          config.YONA.PROJECT_NAME,
+          config.YONA.FROM.OWNER_NAME,
+          config.YONA.FROM.PROJECT_NAME,
       );
       writeOriginalJson(response.body, exportDir);
       writeItems(response.body.issues, path.join(exportDir, '/issues/'));

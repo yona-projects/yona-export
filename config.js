@@ -2,10 +2,19 @@ export default {
   EXPORT_BASE_DIR: 'exported',
   ATTACHMENTS_DIR: 'files',
   YONA: {
-    SERVER: 'http://127.0.0.1:9000',
-    USER_TOKEN: 'FUMwruLNFz0EAldNbXuMawqDl01gLp1XI0M7qPu1pX0=',
-    OWNER_NAME: 'doortts',
-    PROJECT_NAME: 'Test',
-    ROOT_CONTEXT: ''
+    FROM: {
+      SERVER: 'http://127.0.0.1:9000',
+      USER_TOKEN: 'vNcPnAHp69Ep0jZCa5IaUsA4o2Eydi95u/ztz3z9cxQ=',
+      OWNER_NAME: 'dlab',
+      PROJECT_NAME: 'hive',
+      ROOT_CONTEXT: ''
+    },
+    TO: {
+      SERVER: 'http://127.0.0.1:9000',
+      USER_TOKEN: 'vNcPnAHp69Ep0jZCa5IaUsA4o2Eydi95u/ztz3z9cxQ=',
+      OWNER_NAME: 'yona-projects',
+      PROJECT_NAME: 'yona',
+      ROOT_CONTEXT: ''
+    }
   }
 };
