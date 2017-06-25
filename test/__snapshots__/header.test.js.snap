@@ -4,24 +4,32 @@ exports[`header createHeader 1`] = `
 "\`\`\`
 id: 1
 title: 새로운 이슈
-created_at: 2016-11-19T08:12:03.000Z
-authorId: doortts
+type: ISSUE_POST
+author: doortts
 authorName: 너굴
+createdAt: 2016-11-19T08:12:03.000Z
+body: \\"이슈인거죠!!\\\\r\\\\n[bensound-cute.mp3](/files/21957)\\\\r\\\\n\\"
+attachments:
+  - id: 21957
+    name: bensound-cute.mp3
+    hash: 0df209c0a171931c4612ac8edefc0d681498148e
+    mimeType: audio/mpeg
+    size: 2718353
 comments:
   - id: 1
     authorId: doortts
     authorName: 너굴
-    created_at: 1479543131000
+    createdAt: 1479543131000
     body: \\"넹 그럿습니다.\\\\r\\\\nㅋㅋ\\"
   - id: 2
     authorId: doortts
     authorName: 너굴
-    created_at: 1479579108000
+    createdAt: 1479579108000
     body: \\"정말요?\\\\r\\\\n\\"
   - id: 3
     authorId: doortts
     authorName: 너굴
-    created_at: 1479579129000
+    createdAt: 1479579129000
     body: \\"넹..ㅋㅋ[bensound-memories.mp3](/files/21959)\\\\r\\\\n[bensound-cute.mp3](/files/21958)\\\\r\\\\n\\"
     attachments:
       - id: 21958
@@ -34,12 +42,6 @@ comments:
         hash: 7e89fcc98822bdd2c0da64b23178bfb6ca7d78dc
         mimeType: audio/mpeg
         size: 3224136
-attachments:
-  - id: 21957
-    name: bensound-cute.mp3
-    hash: 0df209c0a171931c4612ac8edefc0d681498148e
-    mimeType: audio/mpeg
-    size: 2718353
 \`\`\`
 이슈인거죠!!
 [bensound-cute.mp3](/files/21957)"

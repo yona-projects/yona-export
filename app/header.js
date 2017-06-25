@@ -6,13 +6,8 @@ const downloadAttachments = function (attachments = []) {
 };
 
 export const createHeader = (post) => {
-  let header = {
-    id: post.id,
-    title: post.title,
-    created_at: new Date(post.created_at),
-    authorId: post.author,
-    authorName: post.authorName,
-  };
+  let header = { ...post  };
+  header.createdAt  = new Date(post.createdAt);
   if (post.comments) {
     header.comments = stripKeys(post.comments, ['type']);
   }

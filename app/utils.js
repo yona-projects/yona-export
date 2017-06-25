@@ -8,7 +8,7 @@ export const getTitle = title => {
 export const getDefaultFileName = post => {
   const title = getTitle(post.title);
   const id = lpadZero(post.id, 5);
-  const date = getDateString(post.created_at);
+  const date = getDateString(post.createdAt);
   const extName = '.md';
 
   return (`${id}-${date}-${title}${extName}`);
