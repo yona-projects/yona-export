@@ -2,7 +2,8 @@ Yona Export
 ===
 
 - 운영중인 Yona 서버의 특정 프로젝트를 로컬PC로 백업받을 수 있도록 도와줍니다.
-- yona v1.1 이상부터 지원합니다.
+- Yona v1.6 이상부터 지원합니다.
+- 자신이 관리자인 프로젝트만 export 가능합니다
 
 설치
 ---
@@ -14,20 +15,31 @@ npm install
 
 프로젝트 설정
 ---
-- Yona 개인 계정 설정 페이지에서 사용자 토큰 탭을 눌러 토큰을 복사합니다.
-- 위에서 설치한 yona-export 폴더에 있는 config.json 파일을 열어서 SERVER, OWNER_NAME, PROJECT_NAME, 앞서 복사해온 사용자 토큰(USER_TOKEN) 항목을 수정합니다.
+- Yona '사용자 설정' 페이지에서 '사용자토큰' 탭을 눌러 자신의 개인 토큰을 확인합니다.
+- clone 받은 yona-export 폴더에 있는 config.json 파일을 열어서 YONA: FROM { SERVER, OWNER_NAME, PROJECT_NAME, 앞서 복사해온 사용자 토큰
+(USER_TOKEN) 항목 } 등을 수정합니다.
 
 예시)
 ```
 export default {
   EXPORT_BASE_DIR: 'exported',  // local pc 디렉터리
-  ATTACHMENTS_DIR: 'files',  // EXPORT_BASE_DIR 아래 첨부파일이 생기는 곳 
+  ATTACHMENTS_DIR: 'files',  // EXPORT_BASE_DIR 아래 첨부파일이 생기는 곳
+  EXPORT_ONLY: true,     // Export만 하고 원격(TO 프로젝트)으로 import작업은 하지 않음
   YONA: {
-    SERVER: 'http://repo.yona.io', // 대상서버
-    USER_TOKEN: 'FUMwruLNFz0EAldNbXuMawqDl01gLp1XI0M7qPu1pX0=', 
-    OWNER_NAME: 'doortts',  // owner 아이디나 그룹 이름
-    PROJECT_NAME: 'Test',  // 대상 프로젝트 이름
-    ROOT_CONTEXT: ''  // 따로 application root를 설정한 경우
+    FROM: {  // Export 할 Yona 인스턴스
+      SERVER: 'https://remote.yona.io',
+      USER_TOKEN: 'vNcPnAHsafjoASDFHASEydi95u/ztz3z9cxQ=',
+      OWNER_NAME: 'yona-projects',
+      PROJECT_NAME: 'yona',
+      ROOT_CONTEXT: ''  // 따로 application root를 설정한 경우
+    },
+    TO: {   // Import 시킬 Yona 인스턴스
+      SERVER: 'https://main.yona.io',
+      USER_TOKEN: 'AsdlfHp6LASFLAiljkEydi95u/ztz3z9SAflh',
+      OWNER_NAME: 'yona-projects',
+      PROJECT_NAME: 'yona',
+      ROOT_CONTEXT: ''
+    }
   }
 };
 
@@ -42,4 +54,9 @@ npm start
 
 exported 폴더아래에 항목별로 폴더들이 생기고 md 파일로 내려 받아집니다. 텍스트 에디터로 열어보면 해당 내용들을 살펴볼 수 있습니다.
 
+Test
+---
+```
+npm test
+```
 
