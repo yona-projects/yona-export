@@ -1,5 +1,4 @@
 /* eslint no-undef: "off" */
-import { expect } from 'chai';
 import { getTitle, getDefaultFileName, lpadZero } from '../app/utils';
 import json from './resource/exports';
 
@@ -13,7 +12,7 @@ describe('utils', () => {
     let title = getTitle(givenTitle);
 
     // Then
-    expect(title).to.equal(expected);
+    expect(title).toBe(expected);
   });
 
   it('lpadZero', () => {
@@ -24,7 +23,7 @@ describe('utils', () => {
     let parsed = lpadZero(numStr, 5);
 
     // Then
-    expect(parsed).to.equal('00012');
+    expect(parsed).toBe('00012');
   });
 
   it('getDefaultFileName', () => {
@@ -34,7 +33,7 @@ describe('utils', () => {
     let filename = getDefaultFileName(json.issues[0]);
 
     // Then
-    expect(filename).to.equal('00001-20161119-새로운-이슈.md');
+    expect(filename).toBe('00001-20161119-새로운-이슈.md');
   });
 
 });
