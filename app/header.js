@@ -10,6 +10,11 @@ export const createHeader = (post) => {
   header.createdAt  = new Date(post.createdAt);
   if (post.comments) {
     header.comments = stripKeys(post.comments, ['type']);
+    post.comments.forEach(comment => {
+      if(comment.attachments) {
+        downloadAttachments(comment.attachments);
+      }
+    });
   }
   if (post.attachments) {
     header.attachments = stripKeysFromAttachment(post.attachments);
