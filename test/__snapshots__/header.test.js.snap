@@ -8,7 +8,6 @@ type: ISSUE_POST
 author: doortts
 authorName: 너굴
 createdAt: 2016-11-19T08:12:03.000Z
-body: \\"이슈인거죠!!\\\\r\\\\n[bensound-cute.mp3](/files/21957)\\\\r\\\\n\\"
 attachments:
   - id: 21957
     name: bensound-cute.mp3

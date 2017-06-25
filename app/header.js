@@ -16,6 +16,7 @@ export const createHeader = (post) => {
     downloadAttachments(header.attachments);
   }
 
+  delete header.body;
   return matter.stringify(post.body, header, { delims: '```' }).trim();
 };
 
