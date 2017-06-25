@@ -6,17 +6,24 @@ import config from '../config';
 export const download = (attachment, cb) => {
   let yonaFileUrl = config.YONA.SERVER + '/files/' + attachment.id;
 
-  fse.ensureDirSync(path.join(config.EXPORT_BASE_DIR, config.ATTACHMENTS_DIR, attachment.id +'', '/'));
+  const attachmentBaseDir = path.join(config.EXPORT_BASE_DIR,
+      config.YONA.OWNER_NAME,
+      config.YONA.PROJECT_NAME,
+      config.ATTACHMENTS_DIR);
+
+  fse.ensureDirSync(path.join(attachmentBaseDir, attachment.id.toString()));
   unirest.get(yonaFileUrl)
       .headers({
         'Accept': '*/*',
         'Yona-Token': config.YONA.USER_TOKEN
       })
       .end(response => {
-        if (response.status !== 200) console.log(response.status);
-        if(cb && typeof cb === 'function') {
-          cb();
+        if (response.status !== 200) {
+          console.log(`${yonaFileUrl} : ${response.status} Error`);
         }
-      }).pipe(fse.createWriteStream('./exported/files/' + attachment.id + '/' + attachment.name));
+        if(cb && typeof cb === 'function') {
+          cb(response);
+        }
+      }).pipe(fse.createWriteStream(path.join(attachmentBaseDir, attachment.id.toString(), attachment.name)));
 };
 
