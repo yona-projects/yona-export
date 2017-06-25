@@ -25,6 +25,7 @@ unirest.get(yonaProjectExportUrl)
           config.YONA.OWNER_NAME,
           config.YONA.PROJECT_NAME,
       );
+      writeOriginalJson(response.body, exportDir);
       writeItems(response.body.issues, path.join(exportDir, '/issues/'));
       writeItems(response.body.posts, path.join(exportDir, '/posts/'));
       writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
@@ -32,6 +33,12 @@ unirest.get(yonaProjectExportUrl)
 
 function isBadResponse(statusCode) {
   return [200, 201].indexOf(statusCode) === -1;
+}
+
+function writeOriginalJson(item, exportDir){
+  fse.outputFile(`${exportDir}.json`, JSON.stringify(item), err => {
+    if (err) console.error(err);
+  })
 }
 
 function writeItems(items, exportDir) {
