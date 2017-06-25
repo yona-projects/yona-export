@@ -6,12 +6,14 @@ const downloadAttachments = function (attachments = []) {
 };
 
 export const createHeader = (post) => {
-  let header = { ...post  };
-  header.createdAt  = new Date(post.createdAt);
+  let header = { ...post };
+  if (post.createdAt) {
+    header.createdAt = new Date(post.createdAt);
+  }
   if (post.comments) {
     header.comments = stripKeys(post.comments, ['type']);
     post.comments.forEach(comment => {
-      if(comment.attachments) {
+      if (comment.attachments) {
         downloadAttachments(comment.attachments);
       }
     });
@@ -22,7 +24,7 @@ export const createHeader = (post) => {
   }
 
   delete header.body;
-  return matter.stringify(post.body, header, { delims: '```' }).trim();
+  return matter.stringify(post.body || '', header, { delims: '```' }).trim();
 };
 
 export default {

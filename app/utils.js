@@ -7,11 +7,11 @@ export const getTitle = title => {
 
 export const getDefaultFileName = post => {
   const title = getTitle(post.title);
-  const id = lpadZero(post.id, 5);
-  const date = getDateString(post.createdAt);
+  const number = lpadZero(post.number, 5) || lpadZero(post.id, 5) || '?????';
+  const date = getDateString(post.createdAt || post.due_on || '????');
   const extName = '.md';
 
-  return (`${id}-${date}-${title}${extName}`);
+  return (`${number}-${date}-${title}${extName}`);
 };
 
 export const lpadZero = (no, n) =>

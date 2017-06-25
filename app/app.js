@@ -27,6 +27,7 @@ unirest.get(yonaProjectExportUrl)
       );
       writeItems(response.body.issues, path.join(exportDir, '/issues/'));
       writeItems(response.body.posts, path.join(exportDir, '/posts/'));
+      writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
     });
 
 function isBadResponse(statusCode) {
