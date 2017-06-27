@@ -1,6 +1,7 @@
 /* eslint no-undef: "off" */
-import { getTitle, getDefaultFileName, lpadZero } from '../app/utils';
+import { getTitle, getDefaultFileName, lpadZero, replaceAttchementFileId } from '../app/utils';
 import json from './resource/exports';
+import sample from './resource/sample';
 
 describe('utils', () => {
   it('getTitle', () => {
@@ -36,5 +37,16 @@ describe('utils', () => {
     expect(filename).toBe('00001-20161119-새로운-이슈.md');
   });
 
+  it('replaceAttchementFileId', () => {
+    // Given
+    const content = '만들었습니다. ![1333336021180.png](/files/1160) 생성하면 이제';
+
+    // When
+    let replaced = replaceAttchementFileId(content, sample.issues[7].attachments);
+
+    // Then
+    expect(replaced).toBe('만들었습니다. ![1333336021180.png](/files/203657) 생성하면 이제');
+
+  });
 });
 

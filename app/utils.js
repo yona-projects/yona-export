@@ -25,3 +25,18 @@ export const getDateString = (timestamp) => {
   let date = moment(new Date(timestamp));
   return date.format('YYYYMMDD');
 };
+
+export const replaceAttchementFileId = (content, filelist) => {
+  return content.replace(/!\[(.*?)]\(.*?\)/g, (a, filename) => {
+    let found = '';
+    if(filelist){
+      filelist.some(file => {
+        if(file.name === filename) {
+          found = file;
+          return true;
+        }
+      });
+    }
+    return `![${found.name}](/files/${found.uploadedFile})`;
+  });
+};

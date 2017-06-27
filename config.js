@@ -3,17 +3,17 @@ export default {
   ATTACHMENTS_DIR: 'files',
   YONA: {
     FROM: {
-      SERVER: 'http://127.0.0.1:9000',
-      USER_TOKEN: 'vNcPnAHp69Ep0jZCa5IaUsA4o2Eydi95u/ztz3z9cxQ=',
-      OWNER_NAME: 'dlab',
-      PROJECT_NAME: 'hive',
+      SERVER: 'https://repo.yona.io',
+      USER_TOKEN: '5bY3UE4QZrwHtJ0G+QnXaNCM3F0Ymr6invqIZyFdszU=',
+      OWNER_NAME: 'yona-projects',
+      PROJECT_NAME: 'yona',
       ROOT_CONTEXT: ''
     },
     TO: {
       SERVER: 'http://127.0.0.1:9000',
-      USER_TOKEN: 'vNcPnAHp69Ep0jZCa5IaUsA4o2Eydi95u/ztz3z9cxQ=',
-      OWNER_NAME: 'yona-projects',
-      PROJECT_NAME: 'yona',
+      USER_TOKEN: '4P259kYI9aMbLkcqhZD9/BX1ze/UKv849TtuKs0cI3w=',
+      OWNER_NAME: 'abc',
+      PROJECT_NAME: 'd',
       ROOT_CONTEXT: ''
     }
   }
