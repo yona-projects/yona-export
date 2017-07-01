@@ -56,7 +56,7 @@ export default {
       "email": "doortts@gmail.com"
     }
   ],
-  "issueCount": 14,
+  "issueCount": 13,
   "postCount": 9,
   "milestoneCount": 4,
   "issues": [
@@ -956,4 +956,3 @@ export default {
     }
   ]
 }
-
