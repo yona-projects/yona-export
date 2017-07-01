@@ -53,6 +53,55 @@ export default class YonaExport {
 
       return files;
     }
+
+
+  }
+
+  getUrlToPost(item, number){
+    console.log(item.type);
+    switch (item.type) {
+      case 'ISSUE_POST':
+        return path.join(config.YONA.TO.SERVER,
+            config.YONA.TO.ROOT_CONTEXT,
+            '/-_-api/v1/owners/',
+            config.YONA.TO.OWNER_NAME,
+            '/projects/',
+            config.YONA.TO.PROJECT_NAME,
+            '/issues');
+      case 'ISSUE_COMMENT':
+        return path.join(config.YONA.TO.SERVER,
+            config.YONA.TO.ROOT_CONTEXT,
+            '/-_-api/v1/owners/',
+            config.YONA.TO.OWNER_NAME,
+            '/projects/',
+            config.YONA.TO.PROJECT_NAME,
+            '/issues',
+            number.toString(),
+            '/comments');
+        break;
+      case 'BOARD_POST':
+        return path.join(config.YONA.TO.SERVER,
+            config.YONA.TO.ROOT_CONTEXT,
+            '/-_-api/v1/owners/',
+            config.YONA.TO.OWNER_NAME,
+            '/projects/',
+            config.YONA.TO.PROJECT_NAME,
+            '/posts');
+      case 'NONISSUE_COMMENT':
+        return path.join(config.YONA.TO.SERVER,
+            config.YONA.TO.ROOT_CONTEXT,
+            '/-_-api/v1/owners/',
+            config.YONA.TO.OWNER_NAME,
+            '/projects/',
+            config.YONA.TO.PROJECT_NAME,
+            '/posts',
+            number.toString(),
+            '/comments');
+      default:
+        throw Error("Unknown item: ", item);
+        return undefined;
+        break;
+    }
   }
 
   getOkCount() {
