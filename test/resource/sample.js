@@ -81,7 +81,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1457880931000,
+          "createdAt": 1457880931000,
           "body": "v1.0.0부터 모바일 페이지를 지원합니다. pad류는 가로모드만 우선 지원합니다."
         },
         {
@@ -89,7 +89,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1457881026000,
+          "createdAt": 1457881026000,
           "body": "갤럭시s3, 갤럭시 노트4, nexus 5, 아이폰5 이상에서 동작하는걸 테스트 했습니다."
         }
       ]
@@ -135,7 +135,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1455694176000,
+          "createdAt": 1455694176000,
           "body": "그렇네요!\r\n\r\n알려주셔서 고맙습니다.\r\n바로 수정해 놓았습니다.\r\n: ) \r\n좋은 하루 되세요!"
         }
       ]
@@ -197,7 +197,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1478704131000,
+          "createdAt": 1478704131000,
           "body": "conf/application.conf 파일 보시면\r\n\r\n`application.hostname`을 설정하는 부분이 있습니다. 이 부분을 사용하시는 도메인으로 적어주시고 재시작 해주시면 될겁니다.\r\n\r\nrepo.yona.io 경우에는 아래처럼 되어 있습니다.\r\n```\r\n# Components used to construct the URL to this application.\r\napplication.scheme=\"https\"\r\napplication.hostname=\"repo.yona.io\"\r\n```\r\n\r\nhttps로 동작하기때문에 https인데 이 부분은 사용하시는 protocol 보시고 변경하시거나 그냥 http로 놔두시면 됩니다."
         },
         {
@@ -205,7 +205,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "syy12",
           "authorName": "영윤",
-          "created_at": 1479111674000,
+          "createdAt": 1479111674000,
           "body": "답변 갑사합니다.\r\n\r\n이미지는 정상 URL로 들어가나 이메일에 들어온 이미지는 깨지는 상태로 나옵니다.\r\n\r\n클릭하면 제대로 이미지가 나오구요\r\n\r\n이메일 안에서도 제대로 표시되도록 할 수 있을 까요. ? "
         },
         {
@@ -213,7 +213,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1479140150000,
+          "createdAt": 1479140150000,
           "body": "@syy12 링크 주소를 볼 수 있을까요?\r\n![1.jpg](/files/274)\r\n위 이미지는 보이시나요?",
           "attachments": [
             {
@@ -234,7 +234,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "syy12",
           "authorName": "영윤",
-          "created_at": 1479802190000,
+          "createdAt": 1479802190000,
           "body": "네 보입니다. \r\n외부에서 접속을 못하도록 해놔서 그런것같네요~감사합니다."
         }
       ]
@@ -260,7 +260,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1479802949000,
+          "createdAt": 1479802949000,
           "body": "현재 프로젝트간 이슈 이동기능은 없는 상태인데요 DB를 직접 건드리시는건 추천드리고 싶지 않습니다."
         },
         {
@@ -268,7 +268,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "syy12",
           "authorName": "영윤",
-          "created_at": 1479863015000,
+          "createdAt": 1479863015000,
           "body": "그럼 새로 일괄 등록도 불가능 할까요. ? "
         }
       ]
@@ -286,6 +286,62 @@ export default {
       "createdAt": 1480247598000,
       "updatedAt": 1483633600000,
       "body": "Yona 에서 Github으로 이사가는 방법\r\n===\r\n\r\n어떤 제품을 사용하는데에 있어, 특히 온라인 서비스이면서 동시에 자신의 중요한 데이터들이 들어 있는 경우에라면 '백업'과 '이동'이 보장되어야 하는 것이 당연합니다. 현재 Yona(구 Yobi)는 이 부분이 부족했던것이 사실입니다. 만약 독립적으로 Yona를 사용하다가 기능이나 운영등의 이슈로 이동을 원할때 이동할 방법들에 대해 고민중입니다. 이사(Migration)를 가지 않더라도 갈 방법이 없는것과 있는데 가지 않는건 천지차이니까요.\r\n\r\n우선은 사용자의 소중한 데이터들의 편하 보관과 필요시의 이동/이전을 위해 \r\nYona v1.1 버전부터 로컬PC로 프로젝트 데이터를 내려받는 방법([Yona Export](https://github.com/yona-projects/yona-export/))과 Yona 유사 기능을 상위세트로 제공하고 있는 Github으로 이사하는 방법(Migration)을 제공할 예정입니다.\r\n\r\n이어지는 내용은 Yona에서 Github으로 이사가능 방법에 대한 설명입니다.\r\n\r\nHow to Yona to Github\r\n===\r\n\r\nYona에서 Github으로 특정 프로젝트를 옮기려면 아래와 같은 준비가 우선 필요합니다.\r\n\r\n준비사항\r\n---\r\n- Yona v1.1 이상\r\n- Github 계정 \r\n\r\n준비가 끝났으면 Yona와 Github 계정에 대해 각각 아래와 같은 작업을 진행합니다.\r\n\r\n환경세팅 전체적인 진행순서\r\n---\r\n- Github: OAuth application 등록하고 client id와 secret 키 받기\r\n- Yona: application.conf 에서 허용여부와 github 키들을 등록하고 재시작하기\r\n- 설치된 Yona 서버에서 이제 /migration URL에서 github migration을 제공합니다.\r\n\r\n이제 하나씩 자세히 살펴보도록 하겠습니다.\r\n\r\nGithub\r\n---\r\n계정 Settings 에 자신만의 OAuth application 등록\r\n\r\n![1249365838131.png](/files/1156)\r\n\r\n![1107459599319.png](/files/1157)\r\n\r\nDeveloper settings 의 OAuth Applications를 선택한 다음\r\n\r\n![349457845360.png](/files/1158)\r\nRegister new application 버튼을 누릅니다. 위 스크린샷에는 제가 이미 만들어 놓은 application이 보이고 있습니다.\r\n\r\n![1440702016370.png](/files/1161)\r\n\r\nHomepage URL: 설치하신 yona 서버 url이나 안내문을 볼수 있는 url을 적으시면 됩니다.\r\n중요한 부분은 `Authorization callback URL` 인데요 여기에 설치한 yona 서버의 migration url을 정확히 적으셔야 합니다.\r\n예를 들어 설치하신 yona의 서버 url이 `http://my-yona.com:9000` 이었다면 \r\nAuthorization callback URL은 `http://my-yona.com:9000/migration` 으로 적어주셔야 합니다.\r\n\r\nrepo.yona.io 같은 경우에는 아래처럼 만들었습니다.\r\n\r\n![1333336021180.png](/files/1160)\r\n\r\n\r\n생성하면 이제 client id와 secret를 볼 수 있게 됩니다.\r\n\r\n![232200672739.png](/files/1162)\r\n\r\n이제 설치한 Yona 서버쪽에 설정을 할 차례입니다.\r\n\r\nYona 설정\r\n---\r\n\r\nconf 파일 하단의 application.conf 파일에 아래 내용을 추가하거나 수정합니다.\r\n\r\n예)\r\n```\r\ngithub.allow.migration = true\r\ngithub.client.id = \"e7f9ad76a3a4ba19b2c5\" \r\ngithub.client.secret = \"cb2aac9a67fb33ee5c42501f6c485bf285cf5\"\r\n\r\n```\r\n**위 키값들은 예시용입니다. 그대로 사용하시면 동작안합니다~**\r\n\r\n- github.allow.migration 의 기본값은 false 이고 true로 변경후 재시작하지 않으면 /migration 으로 접근하면 허용하지 않는 요청이라고 표시됩니다.\r\n- `github.client.id`와 `github.client.secret`에 각각 앞에서 github에서 설정한 client id 와 secret 값을 복사해서 붙여 넣습니다.\r\n- Yona 서버를 재시작하고 /migration URL로 접속하면 최초접속시에는 자동으로 github 으로 이동해서 로그인을 요청하게 됩니다.\r\n- Gihtub 로그인을 하면 앞에서 만든 OAuth 애플리케이션에서 권한을 요청하는 화면이 등장합니다. 이때 Yes를 선택하셔야 정상적으로 권할을 부여받아서 Github 으로 프로젝트를 이동하는 것이 가능해집니다.\r\n- 권한을 부여받으면 다시 설치한 Yona 서버로 자동으로 되돌아옵니다. (앞서 등록한 callback url 덕분입니다)\r\n\r\n![64796853386.png](/files/1159)\r\n\r\n\r\n- source와 destination를 선택해서 이동하면 Yona의 이슈와 게시글은 github 이슈로, milestone을 마찬가지로 github milestone으로 이동됩니다. \r\n- 단, github은 게시판이 없기때문에 Yona의 게시글은 '게시글' 라벨이 붙어서 github 이슈로 이동되는점을 유의해 주세요\r\n\r\n이제 환경적인 준비는 다 되었고 실제로 프로젝트들을 이동하는 작업애 대해 설명합니다.\r\n\r\n프로젝트 옮기기\r\n===\r\n\r\n준비사항\r\n---\r\n- git client \r\n\r\n전체적인 진행순서\r\n--\r\n- github 에 프로젝트 만들어 놓기\r\n- 설치된 Yona 서버 migration url 에서 source와 destination(=github project) 선택\r\n- 순서대로 이동\r\n- wiki 페이지 생성\r\n- Yona Export 를 이용햐서 첨부파일 이동\r\n\r\n상세설명\r\n---\r\n\r\n- Github에 Yona 프로젝트에서 이동할 프로젝트를 만듭니다.\r\n\r\n- 설치된 Yona v1.1 이상의 서버에서 /migration URL로 접근합니다.\r\n```\r\n예) http://127.0.0.1:9000/migration\r\n```\r\n- Source 에는 자신이 admin인 Yona 프로젝트 목록이, Destination 에는 이동 가능한 github 프로젝트 목록이 보입니다.\r\n- 이동시에는 대상 프로젝트의 이슈를 지우거나 수정하지 않습니다. 따라서 여러번 이동을 누르면 중복해서 이슈가 게시글이 등록된다는 점을 유의해 주세요.\r\n- 이미 이슈가 있는 프로젝트는 경고가 뜨니까 확인해 주쎄요\r\n- 이슈를 먼저 이동하면 게시글 이동할때는 마찬가지로 이미 이슈가 등록되어있다고 경고가 뜨지만 그럴수 밖에 없습니다. Yona의 이슈와 게시글을 github에서는 다 이슈로 이동하기때문입니다.\r\n- 기다리면 상단에 메시지와 이동 진행막대가 보일겁니다.\r\n- 만약 이동중에 문제가 생기면 github 프로젝트를 지우고 다시 생성해서 진행하시면 됩니다.\r\n\r\n첨부파일 이동\r\n---\r\n- 이슈나 게시판을 옮기고 보면 첨부파일들이 모두 빠져있는것으로 보입니다.\r\n- 첨부파일 이동은 github의 wiki 기능을 이용해서 한번에 옮기도록 만들었습니다.\r\n- 대상 github 프로젝트가서 wiki 메뉴에서 페이지를 만듭니다. (만든적이 있으면 생략가능)\r\n![591968731021.png](/files/1151)\r\n![1421371255546.png](/files/1152)\r\n특별히 내용입력할 필요 없습니다. `Save Page` 누르세요.\r\n- 만들고 나면 wiki 페이지를 clone 할 수 있는 url 이 보입니다.\r\n![1072515748554.png](/files/1153)\r\n- [Yona Export](https://github.com/yona-projects/yona-export) 를 이용해서 이동대상 프로젝트의 첨부파일을 내려받습니다.\r\n- Yona Exoprt 를 사용하면 로컬 exported 폴더에 대상 프로젝트의 글들과 files 폴더가 생겨있는걸 볼 수 있습니다.\r\n![47350399837.png](/files/1154)\r\n\r\n이제 위에서 만들어진 wiki URL을 이용해서 files를 wiki 저장소로 집어 넣으면 됩니다. \r\n아래는 wiki URL이 https://github.com/doortts/test.wiki.git 일 경우에 대한 예시입니다.\r\n```\r\ngit init\r\ngit remote add origin https://github.com/doortts/test.wiki.git\r\ngit add files\r\ngit commit -m \"Upload files\"\r\ngit push origin master -u\r\n``` \r\n- github id와 password를 물어보면 잘 입력합니다.\r\n- 참고로 50M 이하의 파일만 정상적으로 업로드가 되니 유의하세요!\r\n\r\n- 첨부파일 업로드가 다 끝나면 이제 이슈와 게시글의 첨부파일들이 잘 보이는지 확인해 봅니다.\r\n\r\n끝!\r\n\r\n주의사항!!\r\n---\r\n- Github은 api call limit 이 있습니다. 분당 150을 넘어가면 abuse detection 이 뜨면서 한 시간동안 api call을 할 수 없게 됩니다.\r\n- 그래서 일부러 조금 느리게 보내도록 되어 있습니다만 같은 서버내에서 동시에 어려명이 이사를 시도하면 이 limit에 쉽게 걸릴테니 담당자를 정하거나 적절히 잘 분배해서 진행하시길 권합니다.\r\n- 첨부파일은 참고로 50M 이하의 파일만 정상적으로 업로드가 되니 유의하세요!\r\n",
+      "comments": [
+        {
+          "id": 107,
+          "type": "ISSUE_COMMENT",
+          "authorId": "doortts",
+          "authorName": "doortts",
+          "createdAt": 1478704131000,
+          "body": "conf/application.conf 파일 보시면\r\n\r\n`application.hostname`을 설정하는 부분이 있습니다. 이 부분을 사용하시는 도메인으로 적어주시고 재시작 해주시면 될겁니다.\r\n\r\nrepo.yona.io 경우에는 아래처럼 되어 있습니다.\r\n```\r\n# Components used to construct the URL to this application.\r\napplication.scheme=\"https\"\r\napplication.hostname=\"repo.yona.io\"\r\n```\r\n\r\nhttps로 동작하기때문에 https인데 이 부분은 사용하시는 protocol 보시고 변경하시거나 그냥 http로 놔두시면 됩니다."
+        },
+        {
+          "id": 108,
+          "type": "ISSUE_COMMENT",
+          "author": {
+            "name": "영윤",
+            "login": "syy12",
+            "email": "syy13@hanmail.net"
+          },
+          "createdAt": 1479111674000,
+          "body": "답변 갑사합니다.\r\n\r\n이미지는 정상 URL로 들어가나 이메일에 들어온 이미지는 깨지는 상태로 나옵니다.\r\n\r\n클릭하면 제대로 이미지가 나오구요\r\n\r\n이메일 안에서도 제대로 표시되도록 할 수 있을 까요. ? "
+        },
+        {
+          "id": 109,
+          "type": "ISSUE_COMMENT",
+          "author": {
+            "loginId": "doortts",
+            "name": "doortts",
+            "email": "doortts@gmail.com"
+          },
+          "createdAt": 1479140150000,
+          "body": "@syy12 링크 주소를 볼 수 있을까요?\r\n![1.jpg](/files/274)\r\n위 이미지는 보이시나요?",
+          "attachments": [
+            {
+              "id": 274,
+              "name": "1.jpg",
+              "hash": "e3e501fe54a051bf747fd7d003779645714a9031",
+              "containerType": "ISSUE_COMMENT",
+              "mimeType": "image/jpeg",
+              "size": 51092,
+              "containerId": "109",
+              "createdDate": 1479140141000,
+              "ownerLoginId": "doortts"
+            }
+          ]
+        },
+        {
+          "id": 111,
+          "type": "ISSUE_COMMENT",
+          "author": {
+            "name": "영윤",
+            "login": "syy12",
+            "email": "syy13@hanmail.net"
+          },
+          "createdAt": 1479802190000,
+          "body": "네 보입니다. \r\n외부에서 접속을 못하도록 해놔서 그런것같네요~감사합니다."
+        }
+      ],
       "attachments": [
         {
           "id": 1151,
@@ -551,7 +607,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1488875543000,
+          "createdAt": 1488875543000,
           "body": "application.conf 에서 default driver 설정 부분을\r\n\r\n```\r\ndb.default.driver=org.mariadb.jdbc.Driver\r\n```\r\n\r\n로 지정해서 실행해 보시겠어요?"
         },
         {
@@ -559,7 +615,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "freedom4867",
           "authorName": "SEONHO SON",
-          "created_at": 1488940285000,
+          "createdAt": 1488940285000,
           "body": "제가 MySQL을 사용할려고 하는데...\r\n드라이버를 mariadb드라이버를 사용해도 되나요?"
         },
         {
@@ -567,7 +623,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1488944954000,
+          "createdAt": 1488944954000,
           "body": "원래는 드라이버를 탑재해야 하는데요 MariaDB connector 자체는 MySQL과 호환되는걸로는 표시되어 있습니다. \r\n\r\n원래 MySQL용 connector롤 배포판에 포함시켜서 같이 배포할까 했는데 라이선스 문제가 있어서 포함은 못시켰습니다.\r\n\r\n우선 조금 번거롭지만 위의 방법이 정상동작하지 않는다면 MySQL 드라이버를 직접 추가하는 방법이 있는습니다.\r\nYona 설치폴더 아래에 보면 lib 폴더가 있는데요\r\n\r\n거기에 \r\n- MySQL connector https://dev.mysql.com/downloads/connector/j/ 다운 받아서 넣어 놓으시고\r\n- bin/yona 파일을 여서 `declare -r app_classpath=` 부분에 해당 jar 파일을 추가해 주시면 \r\n\r\nMySQL Driver가 설치된 것과 동일한 상태가 됩니다."
         },
         {
@@ -575,7 +631,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "freedom4867",
           "authorName": "SEONHO SON",
-          "created_at": 1488971394000,
+          "createdAt": 1488971394000,
           "body": "지원해주신 내용 잘 보았습니다.\r\n감사합니다 @doortts 님!\r\n\r\njar파일을 저기다가 추가하니 정상작동 되지않고 계속해서 mariadb driver 라이브러리를 사용하더라구요...\r\n\r\n그래서 MySQL.driver를 추가해주고 mariadb.driver를 제거해주니 정상작동 되었습니다.\r\n\r\n혹여 MySQL을 사용하시는 분들을 위해 댓글 남겨둡니다^^\r\n\r\nyona! 항상 고맙게 잘 쓰고 있습니다!\r\n\r\n감사합니다^^"
         },
         {
@@ -583,7 +639,7 @@ export default {
           "type": "ISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1488972456000,
+          "createdAt": 1488972456000,
           "body": "@freedom4867 해결하셨다니 다행이고 방법까지 공유해 주셔서 고맙습니다. 동시에 둘 다 library path 있으면 무언가 충돌이 나나보네요. :) 그럼 꽃샘추위에 감기 조심하시고 즐거운 저녁되세요!"
         }
       ]
@@ -644,7 +700,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "채수원",
-          "created_at": 1454598321000,
+          "createdAt": 1454598321000,
           "body": "만약 소스코드를 git 으로 내려 받아서 운영중인 프로젝트인 경우에는 아래 패치파일을 내려 받아서 Yobi 홈 디렉터리에서 git apply 로 패치를 적용합니다.\r\n\r\n```\r\ngit apply 0001-add-exporting-and-importing-feature.patch\r\n```\r\n\r\n[0001-add-exporting-and-importing-feature.patch](/files/4)",
           "attachments": [
             {
@@ -665,7 +721,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "lotiony",
           "authorName": "김가별",
-          "created_at": 1472695991000,
+          "createdAt": 1472695991000,
           "body": "안녕하세요?\r\n기존 windows 서버에서 yobi 0.8.2를 이용하고 있었습니다. \r\n이번에 yona로 업그레이드 하기 위해서 이 문서를 보면서 따라하고 있었는데요.\r\nyobi-data-export.zip으로 받은 파일을 기존의 yobi-0.8.2폴더에 모두 압축풀어 덮어씌운 후 yobi사이트를 새로고침하니 yobi의 실행이 종료되어 버렸습니다.\r\n다시 running_Pid를 삭제하고 콘솔에서 bin\\yobi.bat을 입력해 yobi를 재실행 하려 하니 제대로 가동이 되지 않네요.\r\n\r\n\r\nC:\\yobi\\yobi-0.8.2>bin\\yobi.bat\r\nPlay server process ID is 22256\r\nOops, cannot start the server.\r\n@7197nfhf8: Cannot init the Global object\r\n        at play.api.WithDefaultGlobal$$anonfun$play$api$WithDefaultGlobal$$globa\r\nlInstance$1.apply(Application.scala:59)\r\n        at play.api.WithDefaultGlobal$$anonfun$play$api$WithDefaultGlobal$$globa\r\nlInstance$1.apply(Application.scala:53)\r\n        at play.utils.Threads$.withContextClassLoader(Threads.scala:21)\r\n        at play.api.WithDefaultGlobal$class.play$api$WithDefaultGlobal$$globalIn\r\nstance(Application.scala:52)\r\n        at play.api.DefaultApplication.play$api$WithDefaultGlobal$$globalInstanc\r\ne$lzycompute(Application.scala:402)\r\n        at play.api.DefaultApplication.play$api$WithDefaultGlobal$$globalInstanc\r\ne(Application.scala:402)\r\n        at play.api.WithDefaultGlobal$class.global(Application.scala:68)\r\n        at play.api.DefaultApplication.global(Application.scala:402)\r\n        at play.api.WithDefaultConfiguration$class.play$api$WithDefaultConfigura\r\ntion$$fullConfiguration(Application.scala:82)\r\n        at play.api.DefaultApplication.play$api$WithDefaultConfiguration$$fullCo\r\nnfiguration$lzycompute(Application.scala:402)\r\n        at play.api.DefaultApplication.play$api$WithDefaultConfiguration$$fullCo\r\nnfiguration(Application.scala:402)\r\n        at play.api.WithDefaultConfiguration$class.configuration(Application.sca\r\nla:84)\r\n        at play.api.DefaultApplication.configuration(Application.scala:402)\r\n        at play.api.Application$class.$init$(Application.scala:274)\r\n        at play.api.DefaultApplication.<init>(Application.scala:402)\r\n        at play.core.StaticApplication.<init>(ApplicationProvider.scala:53)\r\n        at play.core.server.NettyServer$.createServer(NettyServer.scala:244)\r\n        at play.core.server.NettyServer$$anonfun$main$3.apply(NettyServer.scala:\r\n280)\r\n        at play.core.server.NettyServer$$anonfun$main$3.apply(NettyServer.scala:\r\n275)\r\n        at scala.Option.map(Option.scala:145)\r\n        at play.core.server.NettyServer$.main(NettyServer.scala:275)\r\n        at play.core.server.NettyServer.main(NettyServer.scala)\r\nCaused by: java.lang.UnsupportedClassVersionError: Global : Unsupported major.mi\r\nnor version 52.0\r\n        at java.lang.ClassLoader.defineClass1(Native Method)\r\n        at java.lang.ClassLoader.defineClass(Unknown Source)\r\n        at java.security.SecureClassLoader.defineClass(Unknown Source)\r\n        at java.net.URLClassLoader.defineClass(Unknown Source)\r\n        at java.net.URLClassLoader.access$100(Unknown Source)\r\n        at java.net.URLClassLoader$1.run(Unknown Source)\r\n        at java.net.URLClassLoader$1.run(Unknown Source)\r\n        at java.security.AccessController.doPrivileged(Native Method)\r\n        at java.net.URLClassLoader.findClass(Unknown Source)\r\n        at java.lang.ClassLoader.loadClass(Unknown Source)\r\n        at sun.misc.Launcher$AppClassLoader.loadClass(Unknown Source)\r\n        at java.lang.ClassLoader.loadClass(Unknown Source)\r\n        at play.api.WithDefaultGlobal$class.play$api$WithDefaultGlobal$$javaGlob\r\nal(Application.scala:31)\r\n        at play.api.DefaultApplication.play$api$WithDefaultGlobal$$javaGlobal$lz\r\nycompute(Application.scala:402)\r\n        at play.api.DefaultApplication.play$api$WithDefaultGlobal$$javaGlobal(Ap\r\nplication.scala:402)\r\n        at play.api.WithDefaultGlobal$$anonfun$play$api$WithDefaultGlobal$$globa\r\nlInstance$1.apply(Application.scala:54)\r\n        ... 21 more\r\n\r\nC:\\yobi\\yobi-0.8.2>\r\n\r\n위와 같은데  0.8.2 data export버전으로 바꾸는 부분에 대해서는 별다른 설명이 없어서 그냥 덮어씌운건데\r\n뭔가 잘못된건가요?\r\n\r\n다시 기존의 0.8.2버전 yobi.zip을 덮어씌우고 실행하니 정상적으로 running 되었습니다."
         },
         {
@@ -673,7 +729,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1472696845000,
+          "createdAt": 1472696845000,
           "body": "@lotiony \r\n사용하시는 java 버전이 어떻게 되시나요?\r\n\r\n오류 핵심은 아래 메시지 인것 같습니다.\r\nCaused by: java.lang.UnsupportedClassVersionError: Global : Unsupported major.minor version 52.0 \r\n\r\n\r\n참고로\r\nhttp://yona.io/ 페이지에서\r\n사용그룹 채널에서 텔레그램으로 메시지 주시면 더 빠르게 피드백 받으실수 있습니다."
         },
         {
@@ -681,7 +737,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "lotiony",
           "authorName": "김가별",
-          "created_at": 1472698001000,
+          "createdAt": 1472698001000,
           "body": "@doortts \r\n자바버전의 문제가 맞았었네요. 기존엔 java 7 update 80버전이었습니다.\r\n백업과 무관하게 mariadb와 yona를 설치중이었고 그래서 java 8 update 101을 설치했습니다.\r\n그리고 yobi0.8.2 data export버전을 가동해보니 정상 작동 하네요.\r\n\r\n기존 0.8.2사용자도 0.8.2 data export를 사용하기 위해서는 java 8로 업데이트를 해야만 할 것 같습니다.\r\n\r\n빠르게 답변주셔서 감사합니다^^"
         }
       ]
@@ -719,7 +775,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "benelog",
           "authorName": "정상혁",
-          "created_at": 1455152573000,
+          "createdAt": 1455152573000,
           "body": "'Yona는 속도, 안정성, 기능, UI 등 모든 면에서 더 나은 Yobi입니다.'의 근거는 뭔가요? 현재는 거의 같은 코드아닌가요?"
         },
         {
@@ -727,7 +783,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "benelog",
           "authorName": "정상혁",
-          "created_at": 1455152735000,
+          "createdAt": 1455152735000,
           "body": "<https://repo.yona.io/yona-projects/yona/post/4> 이 속도, 안정성이 더 높아질수 있는 근거가 되겠군요 "
         },
         {
@@ -735,7 +791,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1455199937000,
+          "createdAt": 1455199937000,
           "body": "네 맞아요.\r\n그런데 작업시작 자체가 Yobi의 마지막 공개배포판인 Yobi 0.8.2 기준으로 포크해서 MariaDB를 적용한 다음 DB, Application 양쪽에서 각각 조정해 나가고 있습니다.\r\n\r\nDB의 경우 테이블 블럭 사이즈 조정부터 시작해서 DB스키마를 전체 다시 생성해서 적용했고 인덱스는 불필요한 부분 하나씩 제거하면서 다시 걸고 있어요.\r\nApplication 레벨에서도 튜닝중인데요 내부에서 이미 처리한 부분 참고할 수 있는건 하고\r\n그 외에도 예전부터 처리하려고 했던 부분들도 적용해 보려고요.\r\n\r\n1.0 릴리즈 목표가 다음주 월요일 밤이니까 그 때까지 작업한 내용 포함시켜서 릴리즈하고 내부로도 보내볼까 생각중이에요.\r\n:D"
         },
         {
@@ -743,7 +799,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "coo",
           "authorName": "유명호_COO",
-          "created_at": 1455247727000,
+          "createdAt": 1455247727000,
           "body": "요비를 사용하나 요나 프로젝트로 변경됨을 알고 접속해봤습니다.\r\n현재 제공해주시는 데모 repo.yona.io 는 웹호스팅 성격으로 서비스가 되는건가요?\r\n이곳에 프로젝트를 생성하고 사용이 가능한건가요?\r\n\r\n답변 기다리겠습니다."
         },
         {
@@ -751,7 +807,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1455249299000,
+          "createdAt": 1455249299000,
           "body": "@coo \r\n안녕하세요? repo.yona.io는 웹호스팅 성격으로 운영한다기보다는 현재 최신 버전의 Yona가 어떤 모습인지 볼 수 있도록 운영하는 일종의 데모서버입니다.\r\n다만 데이터를 지우거나 할 계획은 현재로는 없기 때문에 원하시면 프로젝트 생성해서 사용하셔도 무방합니다. "
         },
         {
@@ -759,7 +815,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "coo",
           "authorName": "유명호_COO",
-          "created_at": 1455249850000,
+          "createdAt": 1455249850000,
           "body": "감사합니다.\r\n데이터에 부담이 안가는 선에서 사용하겠습니다."
         }
       ]
@@ -835,7 +891,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1455038973000,
+          "createdAt": 1455038973000,
           "body": "repo.yona.io 에서 사용중인 my.cnf 파일 추가 설정내용\r\n```\r\n[client-server]\r\n\r\n[client]\r\ndefault-character-set=utf8mb4\r\n\r\n[mysql]\r\ndefault-character-set=utf8mb4\r\n\r\n[mysqld]\r\ncollation-server = utf8mb4_unicode_ci\r\ninit-connect='SET NAMES utf8mb4'\r\ncharacter-set-server = utf8mb4\r\nlower_case_table_names=1\r\n```"
         }
       ]
@@ -859,7 +915,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1455805183000,
+          "createdAt": 1455805183000,
           "body": "@holyachon 님! Contribution 감사합니다! :D\r\n\r\npastebin 사이트가 회사에서는 (이유는 모르겠지만)접근 금지사이트라 확인이 늦었습니다. \r\nhttps://github.com/yona-projects/yona/pull/13 로 보내주신 pull request 확인한 다음 merge 하겠습니다.\r\n\r\nps.\r\n작성해 주신 init.d 스크립트 좋네요!! ㅎㅎ"
         }
       ]
@@ -897,7 +953,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "tru64ufs",
           "authorName": "Chang Song",
-          "created_at": 1455835522000,
+          "createdAt": 1455835522000,
           "body": "유후!!!!!"
         },
         {
@@ -905,7 +961,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "benelog",
           "authorName": "정상혁",
-          "created_at": 1455912565000,
+          "createdAt": 1455912565000,
           "body": "20배 빨라진 근거가 궁금하네요. "
         },
         {
@@ -913,7 +969,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "benelog",
           "authorName": "정상혁",
-          "created_at": 1455918494000,
+          "createdAt": 1455918494000,
           "body": "호기심에 Cache 적용로직 코드를 보고 리뷰의견을 드렸습니다. 멤버변수에 Thread-safety하지 않은 HashMap을 쓴 부분과 CacheLoader.load()메서드를 원래의 설계 의도와 다르게 쓴 점에 대해서 의견드렸습니다. \r\n\r\n- https://github.com/yona-projects/yona/commit/55b180bb060b40a3a31d454cde950b3ca8a4beca\r\n- https://github.com/yona-projects/yona/commit/49e2b2ec4b8a66ed44962b6faa0cecbe5c155f17\r\n\r\n개인 프로젝트이니 받아들이실지는 수원님의 자유이고, 답변을 안 하셔도 이해합니다. ^^;\r\n"
         },
         {
@@ -921,7 +977,7 @@ export default {
           "type": "NONISSUE_COMMENT",
           "authorId": "doortts",
           "authorName": "doortts",
-          "created_at": 1455934748000,
+          "createdAt": 1455934748000,
           "body": "제가 load 메소드를 오해해서 작성했었네요. 알려주셔서 고맙습니다. @benelog 님~\r\n새로 올렸는데 여유되시면 한 번 더 봐주세요. LRU 되는 간단한 concurrentHashMap으로 만드는게 목표였거든요.\r\n해당 링크에도 history를 위해 코멘트 남길게요.\r\n\r\n그리고 작업했던 내용들 정리해서 내부로도 공유할테니 그때도 보고 의견주세요! \r\n그럼 주말 잘 보내세요 \r\n\r\nps\r\n저는 감기가 심하게 와서 병원가보려고요. 감기조심하시구요"
         }
       ]

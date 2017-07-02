@@ -27,6 +27,9 @@ export const getDateString = (timestamp) => {
 };
 
 export const replaceAttchementFileId = (content, filelist) => {
+  if(!filelist || filelist.length === 0) {
+    return content;
+  }
   return content.replace(/!\[(.*?)]\(.*?\)/g, (a, filename) => {
     let found = '';
     if(filelist){

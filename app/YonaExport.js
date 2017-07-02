@@ -1,5 +1,6 @@
 import unirest from 'unirest';
 import path from 'path';
+import fse from 'fs-extra';
 import config from '../config';
 import { replaceAttchementFileId } from './utils';
 
@@ -14,8 +15,8 @@ export default class YonaExport {
     this.okCount = 0;
   }
 
-  pushPost(post) {
-    let files = collectAttachmentFileIds(post);
+  pushPost(post, parent, cb) {
+    let files = this.collectAttachmentFileIds(post);
     post.body = replaceAttchementFileId(post.body, post.attachments);
     let data = {
       'temporaryUploadFiles': files,
@@ -23,9 +24,7 @@ export default class YonaExport {
     };
 
 
-    const yonApiUrl = config.YONA.TO.SERVER +
-        `${config.YONA.TO.ROOT_CONTEXT}/-_-api/v1/owners/${config.YONA.TO.OWNER_NAME}/projects/${config.YONA.TO.PROJECT_NAME}/issues`;
-
+    const yonApiUrl = this.getUrlToPost(post, parent);
     unirest.post(yonApiUrl)
         .headers({
           'Accept': 'application/json',
@@ -35,68 +34,71 @@ export default class YonaExport {
         .send(JSON.stringify(data))
         .end(response => {
           if (this.isBadResponse(response.status)) {
-            console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', response.status, response.statusMessage);
-            process.exit(1);
+            console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', yonApiUrl, response.status, response.statusMessage, data);
           }
           console.log('response: ', response.data);
           this.okCount++;
+          if (cb) {
+            return cb(response);
+          }
         });
-
-    ////////////////////////////////////////////////
-    function collectAttachmentFileIds(target) {
-      let files = [];
-      if (target.attachments) {
-        target.attachments.forEach(file => {
-          files.push(file.uploadedFile);
-        });
-      }
-
-      return files;
-    }
-
 
   }
 
-  getUrlToPost(item, number){
-    console.log(item.type);
+  collectAttachmentFileIds(target) {
+    let files = [];
+    if (target.attachments) {
+      target.attachments.forEach(file => {
+        files.push(file.uploadedFile);
+      });
+    }
+
+    return files;
+  }
+
+  getUrlToPost(item, parent) {
     switch (item.type) {
       case 'ISSUE_POST':
-        return path.join(config.YONA.TO.SERVER,
-            config.YONA.TO.ROOT_CONTEXT,
-            '/-_-api/v1/owners/',
-            config.YONA.TO.OWNER_NAME,
-            '/projects/',
-            config.YONA.TO.PROJECT_NAME,
-            '/issues');
+        return config.YONA.TO.SERVER
+            + path.join(
+                config.YONA.TO.ROOT_CONTEXT,
+                '/-_-api/v1/owners/',
+                config.YONA.TO.OWNER_NAME,
+                '/projects/',
+                config.YONA.TO.PROJECT_NAME,
+                '/issues');
       case 'ISSUE_COMMENT':
-        return path.join(config.YONA.TO.SERVER,
-            config.YONA.TO.ROOT_CONTEXT,
-            '/-_-api/v1/owners/',
-            config.YONA.TO.OWNER_NAME,
-            '/projects/',
-            config.YONA.TO.PROJECT_NAME,
-            '/issues',
-            number.toString(),
-            '/comments');
+        return config.YONA.TO.SERVER
+            + path.join(
+                config.YONA.TO.ROOT_CONTEXT,
+                '/-_-api/v1/owners/',
+                config.YONA.TO.OWNER_NAME,
+                '/projects/',
+                config.YONA.TO.PROJECT_NAME,
+                '/issues',
+                parent.number.toString(),
+                '/comments');
         break;
       case 'BOARD_POST':
-        return path.join(config.YONA.TO.SERVER,
-            config.YONA.TO.ROOT_CONTEXT,
-            '/-_-api/v1/owners/',
-            config.YONA.TO.OWNER_NAME,
-            '/projects/',
-            config.YONA.TO.PROJECT_NAME,
-            '/posts');
+        return config.YONA.TO.SERVER
+            + path.join(
+                config.YONA.TO.ROOT_CONTEXT,
+                '/-_-api/v1/owners/',
+                config.YONA.TO.OWNER_NAME,
+                '/projects/',
+                config.YONA.TO.PROJECT_NAME,
+                '/posts');
       case 'NONISSUE_COMMENT':
-        return path.join(config.YONA.TO.SERVER,
-            config.YONA.TO.ROOT_CONTEXT,
-            '/-_-api/v1/owners/',
-            config.YONA.TO.OWNER_NAME,
-            '/projects/',
-            config.YONA.TO.PROJECT_NAME,
-            '/posts',
-            number.toString(),
-            '/comments');
+        return config.YONA.TO.SERVER
+            + path.join(
+                config.YONA.TO.ROOT_CONTEXT,
+                '/-_-api/v1/owners/',
+                config.YONA.TO.OWNER_NAME,
+                '/projects/',
+                config.YONA.TO.PROJECT_NAME,
+                '/posts',
+                parent.number.toString(),
+                '/comments');
       default:
         throw Error("Unknown item: ", item);
         return undefined;
@@ -108,11 +110,11 @@ export default class YonaExport {
     return this.okCount;
   }
 
-  pushFiles(post) {
+  pushFiles(post, parent, cb) {
     let uploaded = 0;
-    if (post.attachments.length === 0) {
-      console.log('enter!');
-      this.pushPost(post);
+    if (!post.attachments || post.attachments.length === 0) {
+      this.pushPost(post, parent, cb);
+      return;
     }
 
     const attachmentBaseDir = path.join(config.EXPORT_BASE_DIR,
@@ -121,6 +123,11 @@ export default class YonaExport {
         config.ATTACHMENTS_DIR);
 
     post.attachments.forEach(attachment => {
+      // TODO Check this path is correct
+      const filePath = path.join(__dirname, '..', attachmentBaseDir, attachment.id.toString(), attachment.name);
+      if(!fse.existsSync(filePath)){
+        console.error("File not found! - ", __dirname, filePath);
+      }
       unirest.post(config.YONA.TO.SERVER + '/files')
           .headers({
             'Content-Type': 'multipart/form-data',
@@ -128,17 +135,17 @@ export default class YonaExport {
           })
           .field('aUthorLoginId', post.author.loginId)
           .field('authorEmail', post.author.email)
-          .attach('filePath', path.join(attachmentBaseDir, attachment.id.toString(), attachment.name)) // Attachment
+          .attach('filePath', filePath) // Attachment
           .end(response => {
             if (this.isBadResponse(response.status)) {
               console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', response.status, response.statusMessage);
-              process.exit(1);
+              return;
             }
 
             attachment.uploadedFile = response.headers.location.split('/')[2];   // eg. location: /files/71
             uploaded++;
             if (uploaded === post.attachments.length) {
-              this.pushPost(post);
+              this.pushPost(post, parent, cb);
             }
           });
     });

@@ -8,15 +8,27 @@ describe('pushPost', () => {
   it('new issue', done => {
     // Given
     const yonaExport = new YonaExport();
-    // yonaExport.pushFiles(sample.issues[7]);
-    done();
+    yonaExport.pushFiles(sample.issues[7], null, done);
   });
 
   it('new comment', done => {
     // Given
     const yonaExport = new YonaExport();
-    // yonaExport.pushFiles(sample.issues[5].comments[0]);
-    done();
+    const comment = sample.issues[7].comments[0];
+    const parent = sample.issues[7];
+
+    // When
+    yonaExport.pushFiles(comment, parent, done);
+  });
+
+  it('new comment - with attachments', done => {
+    // Given
+    const yonaExport = new YonaExport();
+    const comment = sample.issues[7].comments[2];
+    const parent = sample.issues[7];
+
+    // When
+    yonaExport.pushFiles(comment, parent, done);
   });
 
 });
@@ -30,18 +42,20 @@ describe('getUrlToPost', () => {
     const url = yonaExport.getUrlToPost(sample.issues[5]);
 
     // Then
-    expect(url).toBe('http:/127.0.0.1:9000/-_-api/v1/owners/abc/projects/d/issues');
+    expect(url).toBe('http://127.0.0.1:9000/-_-api/v1/owners/abc/projects/d/issues');
   });
 
   it('issue comment post url', () => {
     // Given
     const yonaExport = new YonaExport();
+    const comment = sample.issues[5].comments[0];
+    const parent = sample.issues[5];
 
     // When
-    const url = yonaExport.getUrlToPost(sample.issues[5].comments[0], sample.issues[5].number);
+    const url = yonaExport.getUrlToPost(comment, parent);
 
     // Then
-    expect(url).toBe('http:/127.0.0.1:9000/-_-api/v1/owners/abc/projects/d/issues/6/comments');
+    expect(url).toBe('http://127.0.0.1:9000/-_-api/v1/owners/abc/projects/d/issues/6/comments');
   });
 
   it('posting post url', () => {
@@ -52,18 +66,20 @@ describe('getUrlToPost', () => {
     const url = yonaExport.getUrlToPost(sample.posts[0]);
 
     // Then
-    expect(url).toBe('http:/127.0.0.1:9000/-_-api/v1/owners/abc/projects/d/posts');
+    expect(url).toBe('http://127.0.0.1:9000/-_-api/v1/owners/abc/projects/d/posts');
   });
 
   it('posting comment post url', () => {
     // Given
     const yonaExport = new YonaExport();
+    const comment = sample.posts[0].comments[0];
+    const parent = sample.posts[0];
 
     // When
-    const url = yonaExport.getUrlToPost(sample.posts[0].comments[0], sample.posts[0].number);
+    const url = yonaExport.getUrlToPost(comment, parent);
 
     // Then
-    expect(url).toBe('http:/127.0.0.1:9000/-_-api/v1/owners/abc/projects/d/posts/1/comments');
+    expect(url).toBe('http://127.0.0.1:9000/-_-api/v1/owners/abc/projects/d/posts/1/comments');
   });
 });
 
