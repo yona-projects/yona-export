@@ -8,7 +8,7 @@ export const getTitle = title => {
 export const getDefaultFileName = post => {
   const title = getTitle(post.title);
   const number = lpadZero(post.number, 5) || lpadZero(post.id, 5) || '?????';
-  const date = getDateString(post.createdAt || post.due_on);
+  const date = getDateString(post.createdAt || post.dueDate);
   const extName = '.md';
 
   return (`${number}-${date}-${title}${extName}`);
@@ -22,7 +22,7 @@ export const getDateString = (timestamp) => {
     return 'NO__DATE';
   }
   moment.locale('ko-KR');
-  let date = moment(new Date(timestamp));
+  let date = moment(timestamp, 'YYYY-MM-DD a hh:mm:ss z');
   return date.format('YYYYMMDD');
 };
 
