@@ -30,16 +30,21 @@ function exportTo() {
   const users = parseRequiredUsers(project);
 
   const yonaExport = new YonaExport();
-  yonaExport.pushToCreateUsers(users, () =>
-      yonaExport.pushProject(project, () =>
-          yonaExport.pushMilestones({milestones: exportedData.milestones})
-      ));
 
+  const apiUrl = {
+    users: to.SERVER + '/-_-api/v1/users',
+    projects: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects`,
+    milestones: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/milestones`
+  };
+
+  yonaExport.importData(users, apiUrl.users, () =>
+      yonaExport.importData(project, apiUrl.projects, () =>
+          yonaExport.importData({milestones: exportedData.milestones}, apiUrl.milestones)
+      ));
 }
 
 function parseRequiredUsers(project) {
-  return {users: [...project.members, ...project.authors, ...project.assignees] }
-
+  return { users: [...project.members, ...project.authors, ...project.assignees] }
 }
 
 function parseProject(source, to) {
