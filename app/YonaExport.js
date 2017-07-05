@@ -92,6 +92,32 @@ export default class YonaExport {
         });
   }
 
+  pushMilestones(milestones, cb) {
+    const to = config.YONA.TO;
+    const apiUrl = to.SERVER
+        + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/milestones`;
+
+    unirest.post(apiUrl)
+        .headers({
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Yona-Token': config.YONA.TO.USER_TOKEN
+        })
+        .send(JSON.stringify(milestones))
+        .end(response => {
+          if (this.isBadResponse(response.status)) {
+            console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', apiUrl, response.status, response.statusMessage, JSON.stringify(milestones));
+          }
+          console.error('response: ', response.body);
+          if (cb) {
+            // intentionally delay
+            setTimeout(() => {
+              return cb(response);
+            }, 1000);
+          }
+        });
+  }
+
   collectAttachmentFileIds(target) {
     let files = [];
     if (target.attachments) {

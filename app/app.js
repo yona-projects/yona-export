@@ -18,19 +18,22 @@ const main = () => {
 main();
 
 function exportTo() {
-  const sourceProject = config.YONA.FROM;
+  const from = config.YONA.FROM;
+  const to = config.YONA.TO;
   const exportedFile = path.join('exported/',
-      sourceProject.OWNER_NAME,
-      sourceProject.PROJECT_NAME + '.json');
+      from.OWNER_NAME,
+      from.PROJECT_NAME + '.json');
   console.log(exportedFile);
   const exportedData = JSON.parse(fse.readFileSync(exportedFile, 'utf8'));
 
-  const project = parseProject(exportedData);
+  const project = parseProject(exportedData, to);
   const users = parseRequiredUsers(project);
 
   const yonaExport = new YonaExport();
-  yonaExport.pushToCreateUsers(users,
-      () => yonaExport.pushProject(project))
+  yonaExport.pushToCreateUsers(users, () =>
+      yonaExport.pushProject(project, () =>
+          yonaExport.pushMilestones({milestones: exportedData.milestones})
+      ));
 
 }
 
@@ -39,10 +42,10 @@ function parseRequiredUsers(project) {
 
 }
 
-function parseProject(source) {
+function parseProject(source, to) {
   return {
-    owner: source.owner,
-    projectName: source.projectName,
+    owner: to.OWNER_NAME,
+    projectName: to.PROJECT_NAME,
     projectDescription: source.projectDescription,
     projectCreatedDate: source.projectCreatedDate,
     projectVcs: source.projectVcs,
