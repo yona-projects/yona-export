@@ -45,6 +45,28 @@ export default class YonaExport {
 
   }
 
+  pushProject(project, cb) {
+    const targetProject = config.YONA.TO;
+    const apiUrl = targetProject.SERVER + path.join('/-_-api/v1/owners/', targetProject.OWNER_NAME, '/projects');
+
+    unirest.post(apiUrl)
+        .headers({
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Yona-Token': config.YONA.TO.USER_TOKEN
+        })
+        .send(JSON.stringify(project))
+        .end(response => {
+          if (this.isBadResponse(response.status)) {
+            console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', apiUrl, response.status, response.statusMessage);
+          }
+          console.error('response: ', response.body);
+          if (cb) {
+            return cb(response);
+          }
+        });
+  }
+
   collectAttachmentFileIds(target) {
     let files = [];
     if (target.attachments) {

@@ -4,32 +4,81 @@ import path from 'path';
 import config from '../config';
 import { getDefaultFileName } from './utils';
 import { createHeader } from './header';
+import YonaExport from './YonaExport';
 
-let yonaProjectExportUrl = config.YONA.FROM.SERVER + '/-_-api/v1'
+const yonaProjectExportUrl = config.YONA.FROM.SERVER + '/-_-api/v1'
     + '/owners/' + config.YONA.FROM.OWNER_NAME
     + '/projects/' + config.YONA.FROM.PROJECT_NAME
     + '/exports';
 
-unirest.get(yonaProjectExportUrl)
-    .headers({
-      'Accept': 'application/json',
-      'Yona-Token': config.YONA.FROM.USER_TOKEN
-    })
-    .end(response => {
-      if (isBadResponse(response.status)) {
-        console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', yonaProjectExportUrl, response.status, response.statusMessage);
-        process.exit(1);
-      }
-      const exportDir = path.join(
-          config.EXPORT_BASE_DIR,
-          config.YONA.FROM.OWNER_NAME,
-          config.YONA.FROM.PROJECT_NAME,
-      );
-      writeOriginalJson(response.body, exportDir);
-      writeItems(response.body.issues, path.join(exportDir, '/issues/'));
-      writeItems(response.body.posts, path.join(exportDir, '/posts/'));
-      writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
-    });
+const main = () => {
+  exportFrom();
+};
+
+main();
+
+function exportTo() {
+  const sourceProject = config.YONA.FROM;
+  const exportedFile = path.join('exported/',
+      sourceProject.OWNER_NAME,
+      sourceProject.PROJECT_NAME + '.json');
+  console.log(exportedFile);
+  const exportedData = JSON.parse(fse.readFileSync(exportedFile, 'utf8'));
+
+  const project = parseProject(exportedData);
+
+  const yonaExport = new YonaExport();
+  yonaExport.pushProject(project);
+}
+
+function parseRequiredUsers(project) {
+  return {users: [...project.members, ...project.authors, ...project.assignees] }
+
+}
+
+function parseProject(source) {
+  return {
+    owner: source.owner,
+    projectName: source.projectName,
+    projectDescription: source.projectDescription,
+    projectCreatedDate: source.projectCreatedDate,
+    projectVcs: source.projectVcs,
+    projectScope: source.projectScope,
+    assignees: source.assignees,
+    authors: source.authors,
+    members: source.members,
+    labels: source.labels
+  }
+}
+
+function exportFrom() {
+  unirest.get(yonaProjectExportUrl)
+      .headers({
+        'Accept': 'application/json',
+        'Yona-Token': config.YONA.FROM.USER_TOKEN
+      })
+      .end(response => {
+        if (isBadResponse(response.status)) {
+          console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', yonaProjectExportUrl, response.status, response.statusMessage);
+          process.exit(1);
+        }
+        const exportDir = path.join(
+            config.EXPORT_BASE_DIR,
+            config.YONA.FROM.OWNER_NAME,
+            config.YONA.FROM.PROJECT_NAME,
+        );
+        writeOriginalJson(response.body, exportDir);
+        writeItems(response.body.issues, path.join(exportDir, '/issues/'));
+        writeItems(response.body.posts, path.join(exportDir, '/posts/'));
+        writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
+
+        if (!config.EXPORT_ONLY) {
+          exportTo();
+        }
+      });
+}
+
+
 
 function isBadResponse(statusCode) {
   return [200, 201].indexOf(statusCode) === -1;
