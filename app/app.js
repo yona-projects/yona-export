@@ -26,9 +26,12 @@ function exportTo() {
   const exportedData = JSON.parse(fse.readFileSync(exportedFile, 'utf8'));
 
   const project = parseProject(exportedData);
+  const users = parseRequiredUsers(project);
 
   const yonaExport = new YonaExport();
-  yonaExport.pushProject(project);
+  yonaExport.pushToCreateUsers(users,
+      () => yonaExport.pushProject(project))
+
 }
 
 function parseRequiredUsers(project) {
