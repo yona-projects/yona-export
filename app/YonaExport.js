@@ -23,7 +23,6 @@ export default class YonaExport {
       ...post
     };
 
-
     const yonApiUrl = this.getUrlToPost(post, parent);
     unirest.post(yonApiUrl)
         .headers({
@@ -31,18 +30,17 @@ export default class YonaExport {
           'Content-Type': 'application/json',
           'Yona-Token': config.YONA.TO.USER_TOKEN
         })
-        .send(JSON.stringify(data))
+        .send(JSON.stringify({issues: [data]}))
         .end(response => {
           if (this.isBadResponse(response.status)) {
             console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', yonApiUrl, response.status, response.statusMessage, data);
           }
-          console.log('response: ', response.data);
+          console.log('response: ', response.body);
           this.okCount++;
           if (cb) {
             return cb(response);
           }
         });
-
   }
 
   importData(payload, apiUrl, cb) {
@@ -141,32 +139,40 @@ export default class YonaExport {
         config.YONA.FROM.PROJECT_NAME,
         config.ATTACHMENTS_DIR);
 
+    let counter = 0;
     post.attachments.forEach(attachment => {
       // TODO Check this path is correct
-      const filePath = path.join(__dirname, '..', attachmentBaseDir, attachment.id.toString(), attachment.name);
+      const filePath = path.join(attachmentBaseDir, attachment.id.toString(), attachment.name);
       if(!fse.existsSync(filePath)){
         console.error("File not found! - ", __dirname, filePath);
       }
-      unirest.post(config.YONA.TO.SERVER + '/files')
-          .headers({
-            'Content-Type': 'multipart/form-data',
-            'Yona-Token': config.YONA.TO.USER_TOKEN
-          })
-          .field('aUthorLoginId', post.author.loginId)
-          .field('authorEmail', post.author.email)
-          .attach('filePath', filePath) // Attachment
-          .end(response => {
-            if (this.isBadResponse(response.status)) {
-              console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', response.status, response.statusMessage);
-              return;
-            }
 
-            attachment.uploadedFile = response.headers.location.split('/')[2];   // eg. location: /files/71
-            uploaded++;
-            if (uploaded === post.attachments.length) {
-              this.pushPost(post, parent, cb);
-            }
-          });
+      setTimeout(() => {
+        unirest.post(config.YONA.TO.SERVER + '/files')
+            .headers({
+              'Accept': 'application/json',
+              'Content-Type': 'multipart/form-data',
+              'Yona-Token': config.YONA.TO.USER_TOKEN
+            })
+            .field('authorLoginId', post.author.loginId)
+            .field('authorEmail', post.author.email)
+            .attach('filePath', filePath) // Attachment
+            .end(response => {
+              if (this.isBadResponse(response.status)) {
+                console.log('Attachment 오류 발생!! HTTP 응답코드를 확인하세요! ',
+                    response.status, response.statusMessage, filePath);
+              } else {
+                attachment.uploadedFile = response.headers.location.split('/')[2];   // eg. location: /files/71
+              }
+
+              uploaded++;
+              if (uploaded === post.attachments.length) {
+                this.pushPost(post, parent, cb);
+              }
+            });
+      }, counter * 500 + 1000);
+
+      counter++;
     });
   }
 

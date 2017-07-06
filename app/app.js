@@ -1,6 +1,7 @@
 import unirest from 'unirest';
 import fse from 'fs-extra';
 import path from 'path';
+import program from 'commander';
 import config from '../config';
 import { getDefaultFileName } from './utils';
 import { createHeader } from './header';
@@ -11,13 +12,29 @@ const yonaProjectExportUrl = config.YONA.FROM.SERVER + '/-_-api/v1'
     + '/projects/' + config.YONA.FROM.PROJECT_NAME
     + '/exports';
 
-const main = () => {
-  exportFrom();
+const main = (from, to) => {
+
+  if( getOptions() === 'export' ){
+    console.log(`start exporting from ${from.OWNER_NAME}/${from.PROJECT_NAME}`);
+    exportFrom();
+  }
+  if( getOptions() === 'import' ){
+    console.log(`start importing to ${to.OWNER_NAME}/${to.PROJECT_NAME}`);
+    importTo();
+  }
 };
 
-main();
+main(config.YONA.FROM, config.YONA.TO);
 
-function exportTo() {
+function getOptions(){
+  program.parse(process.argv);
+
+  if(program.args && program.args.length > 0) {
+    return program.args[0];
+  }
+}
+
+function importTo() {
   const from = config.YONA.FROM;
   const to = config.YONA.TO;
   const exportedFile = path.join('exported/',
@@ -34,12 +51,24 @@ function exportTo() {
   const apiUrl = {
     users: to.SERVER + '/-_-api/v1/users',
     projects: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects`,
-    milestones: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/milestones`
+    milestones: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/milestones`,
+    issues: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/issues`
   };
+
+  let counter = 0;
 
   yonaExport.importData(users, apiUrl.users, () =>
       yonaExport.importData(project, apiUrl.projects, () =>
-          yonaExport.importData({milestones: exportedData.milestones}, apiUrl.milestones)
+          yonaExport.importData({ milestones: exportedData.milestones }, apiUrl.milestones, () =>
+              exportedData.issues.forEach(issue => {
+                counter++;
+                setTimeout(() => {
+                  yonaExport.pushFiles(issue, response => {
+                    console.log(response);
+                  });
+                }, counter * 200);
+              })
+          )
       ));
 }
 
@@ -78,26 +107,24 @@ function exportFrom() {
             config.YONA.FROM.OWNER_NAME,
             config.YONA.FROM.PROJECT_NAME,
         );
-        writeOriginalJson(response.body, exportDir);
+
         writeItems(response.body.issues, path.join(exportDir, '/issues/'));
         writeItems(response.body.posts, path.join(exportDir, '/posts/'));
         writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
 
-        if (!config.EXPORT_ONLY) {
-          exportTo();
-        }
+        writeOriginalJson(response.body, exportDir);
       });
 }
-
 
 
 function isBadResponse(statusCode) {
   return [200, 201].indexOf(statusCode) === -1;
 }
 
-function writeOriginalJson(item, exportDir){
+function writeOriginalJson(item, exportDir, cb) {
   fse.outputFile(`${exportDir}.json`, JSON.stringify(item), err => {
     if (err) console.error(err);
+    if(cb) cb();
   })
 }
 

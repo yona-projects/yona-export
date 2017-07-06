@@ -1,21 +1,21 @@
 /* eslint no-undef: "off" */
 import YonaExport from '../app/YonaExport';
 import path from 'path';
-import sample from './resource/sample.js';
+import sample from './resource/yona-projects/yona-help.js';
 
 
 describe('pushPost', () => {
   it('new issue', done => {
     // Given
     const yonaExport = new YonaExport();
-    yonaExport.pushFiles(sample.issues[7], null, done);
+    yonaExport.pushFiles(sample.issues[1], null, done);
   });
 
   it('new comment', done => {
     // Given
     const yonaExport = new YonaExport();
-    const comment = sample.issues[7].comments[0];
-    const parent = sample.issues[7];
+    const comment = sample.issues[2].comments[0];
+    const parent = sample.issues[2];
 
     // When
     yonaExport.pushFiles(comment, parent, done);
@@ -24,8 +24,8 @@ describe('pushPost', () => {
   it('new comment - with attachments', done => {
     // Given
     const yonaExport = new YonaExport();
-    const comment = sample.issues[7].comments[2];
-    const parent = sample.issues[7];
+    const comment = sample.issues[2].comments[0];
+    const parent = sample.issues[2];
 
     // When
     yonaExport.pushFiles(comment, parent, done);
@@ -39,7 +39,7 @@ describe('getUrlToPost', () => {
     const yonaExport = new YonaExport();
 
     // When
-    const url = yonaExport.getUrlToPost(sample.issues[5]);
+    const url = yonaExport.getUrlToPost(sample.issues[2]);
 
     // Then
     expect(url).toBe('http://127.0.0.1:9000/-_-api/v1/owners/abc/projects/d/issues');
@@ -48,8 +48,8 @@ describe('getUrlToPost', () => {
   it('issue comment post url', () => {
     // Given
     const yonaExport = new YonaExport();
-    const comment = sample.issues[5].comments[0];
-    const parent = sample.issues[5];
+    const comment = sample.issues[2].comments[0];
+    const parent = sample.issues[2];
 
     // When
     const url = yonaExport.getUrlToPost(comment, parent);

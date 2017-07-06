@@ -24,7 +24,6 @@ npm install
 export default {
   EXPORT_BASE_DIR: 'exported',  // local pc 디렉터리
   ATTACHMENTS_DIR: 'files',  // EXPORT_BASE_DIR 아래 첨부파일이 생기는 곳
-  EXPORT_ONLY: true,     // Export만 하고 원격(TO 프로젝트)으로 import작업은 하지 않음
   YONA: {
     FROM: {  // Export 할 Yona 인스턴스
       SERVER: 'https://remote.yona.io',
@@ -49,10 +48,18 @@ Project Export 실행
 ---
 
 ```
-npm start
+npm start -- export
 ```
 
 exported 폴더아래에 항목별로 폴더들이 생기고 md 파일로 내려 받아집니다. 텍스트 에디터로 열어보면 해당 내용들을 살펴볼 수 있습니다.
+
+Project Import 실행
+---
+
+```
+npm start -- import
+```
+
 
 Test
 ---
