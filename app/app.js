@@ -52,24 +52,76 @@ function importTo() {
     users: to.SERVER + '/-_-api/v1/users',
     projects: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects`,
     milestones: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/milestones`,
-    issues: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/issues`
+    issues: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/issues`,
+    posts: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/posts`
   };
 
-  let counter = 0;
+
 
   yonaExport.importData(users, apiUrl.users, () =>
       yonaExport.importData(project, apiUrl.projects, () =>
-          yonaExport.importData({ milestones: exportedData.milestones }, apiUrl.milestones, () =>
-              exportedData.issues.forEach(issue => {
-                counter++;
-                setTimeout(() => {
-                  yonaExport.pushFiles(issue, response => {
-                    console.log(response);
-                  });
-                }, counter * 200);
-              })
-          )
+          yonaExport.importData({ milestones: exportedData.milestones }, apiUrl.milestones, () => {
+            pushIssues(exportedData, () => {
+              pushPostings(exportedData);
+            });
+          })
       ));
+}
+
+function pushPostings(exportedData, cb) {
+  const yonaExport = new YonaExport();
+  let counter = 0;
+  exportedData.posts.forEach(posting => {
+    counter++;
+    setTimeout(() => {
+      yonaExport.pushFiles(posting, null, response => {
+        if (response.status === 201) {
+          posting.number = response.body[0].location.split('/').pop();
+          if (posting.comments && posting.comments.length > 0) {
+            pushComments(posting);
+          }
+        }
+      });
+    }, counter * 500);
+    if (!exportedData.posts || counter === exportedData.posts.length) {
+      if(cb) cb();
+    }
+  });
+}
+
+function pushIssues(exportedData, cb) {
+  const yonaExport = new YonaExport();
+  let counter = 0;
+  exportedData.issues.forEach(issue => {
+    counter++;
+    setTimeout(() => {
+      yonaExport.pushFiles(issue, null, response => {
+        if (response.status === 201) {
+          issue.number = response.body[0].location.split('/').pop();
+          if (issue.comments && issue.comments.length > 0) {
+            pushComments(issue);
+          }
+        }
+      });
+    }, counter * 500);
+    if (!exportedData.issues || counter === exportedData.issues.length) {
+      if(cb) cb();
+    }
+  });
+}
+
+function pushComments (item) {
+  const yonaExport = new YonaExport();
+  let commentCounter = 0;
+
+  item.comments.forEach(comment => {
+    commentCounter++;
+    setTimeout(() => {
+      yonaExport.pushFiles(comment, item, response => {
+        console.log(response.body);
+      })
+    }, commentCounter * 300);
+  })
 }
 
 function parseRequiredUsers(project) {

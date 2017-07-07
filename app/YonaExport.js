@@ -23,17 +23,19 @@ export default class YonaExport {
       ...post
     };
 
+
     const yonApiUrl = this.getUrlToPost(post, parent);
+    const itemType = this.getItemType(post, parent);
     unirest.post(yonApiUrl)
         .headers({
           'Accept': 'application/json',
           'Content-Type': 'application/json',
           'Yona-Token': config.YONA.TO.USER_TOKEN
         })
-        .send(JSON.stringify({issues: [data]}))
+        .send(JSON.stringify({[itemType]: [data]}))
         .end(response => {
           if (this.isBadResponse(response.status)) {
-            console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', yonApiUrl, response.status, response.statusMessage, data);
+            console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', yonApiUrl, response.status, response.statusMessage, JSON.stringify(data));
           }
           console.log('response: ', response.body);
           this.okCount++;
@@ -74,6 +76,38 @@ export default class YonaExport {
   }
 
   getUrlToPost(item, parent) {
+    if(parent && parent.type){
+      switch (parent.type) {
+        case 'ISSUE_POST':
+          return config.YONA.TO.SERVER
+              + path.join(
+                  config.YONA.TO.ROOT_CONTEXT,
+                  '/-_-api/v1/owners/',
+                  config.YONA.TO.OWNER_NAME,
+                  '/projects/',
+                  config.YONA.TO.PROJECT_NAME,
+                  '/issues',
+                  parent.number.toString(),
+                  '/comments');
+          break;
+        case 'BOARD_POST':
+          return config.YONA.TO.SERVER
+              + path.join(
+                  config.YONA.TO.ROOT_CONTEXT,
+                  '/-_-api/v1/owners/',
+                  config.YONA.TO.OWNER_NAME,
+                  '/projects/',
+                  config.YONA.TO.PROJECT_NAME,
+                  '/posts',
+                  parent.number.toString(),
+                  '/comments');
+        default:
+          throw Error("Unknown item: ", item);
+          return undefined;
+          break;
+      }
+    }
+
     switch (item.type) {
       case 'ISSUE_POST':
         return config.YONA.TO.SERVER
@@ -84,18 +118,6 @@ export default class YonaExport {
                 '/projects/',
                 config.YONA.TO.PROJECT_NAME,
                 '/issues');
-      case 'ISSUE_COMMENT':
-        return config.YONA.TO.SERVER
-            + path.join(
-                config.YONA.TO.ROOT_CONTEXT,
-                '/-_-api/v1/owners/',
-                config.YONA.TO.OWNER_NAME,
-                '/projects/',
-                config.YONA.TO.PROJECT_NAME,
-                '/issues',
-                parent.number.toString(),
-                '/comments');
-        break;
       case 'BOARD_POST':
         return config.YONA.TO.SERVER
             + path.join(
@@ -105,17 +127,20 @@ export default class YonaExport {
                 '/projects/',
                 config.YONA.TO.PROJECT_NAME,
                 '/posts');
-      case 'NONISSUE_COMMENT':
-        return config.YONA.TO.SERVER
-            + path.join(
-                config.YONA.TO.ROOT_CONTEXT,
-                '/-_-api/v1/owners/',
-                config.YONA.TO.OWNER_NAME,
-                '/projects/',
-                config.YONA.TO.PROJECT_NAME,
-                '/posts',
-                parent.number.toString(),
-                '/comments');
+      default:
+        throw Error("Unknown item: ", item);
+        return undefined;
+        break;
+    }
+  }
+
+  getItemType(item, parent) {
+    const itemType = item.type || parent.type;
+    switch (itemType) {
+      case 'ISSUE_POST':
+        return 'issues';
+      case 'BOARD_POST':
+        return 'posts';
       default:
         throw Error("Unknown item: ", item);
         return undefined;
