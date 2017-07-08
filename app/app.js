@@ -52,18 +52,19 @@ function importTo() {
     users: to.SERVER + '/-_-api/v1/users',
     projects: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects`,
     milestones: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/milestones`,
+    labels: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/labels`,
     issues: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/issues`,
     posts: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/posts`
   };
 
-
-
   yonaExport.importData(users, apiUrl.users, () =>
       yonaExport.importData(project, apiUrl.projects, () =>
           yonaExport.importData({ milestones: exportedData.milestones }, apiUrl.milestones, () => {
-            pushIssues(exportedData, () => {
-              pushPostings(exportedData);
-            });
+            yonaExport.importData({ labels: exportedData.labels }, apiUrl.labels, () => {
+              pushIssues(exportedData, () => {
+                pushPostings(exportedData);
+              });
+            })
           })
       ));
 }
