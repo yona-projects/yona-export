@@ -3,6 +3,7 @@ import path from 'path';
 import fse from 'fs-extra';
 import config from '../config';
 import { replaceAttchementFileId } from './utils';
+import { getItemType, getUrlToPost } from './exportHelper';
 
 /**
  * config에 지정된 Yona 서버로 글을 보내는 기능을 담당하는 클래스
@@ -24,20 +25,20 @@ export default class YonaExport {
     };
 
 
-    const yonApiUrl = this.getUrlToPost(post, parent);
-    const itemType = this.getItemType(post, parent);
+    const yonApiUrl = getUrlToPost(post, parent, config);
+    const itemType = getItemType(post, parent);
     unirest.post(yonApiUrl)
         .headers({
           'Accept': 'application/json',
           'Content-Type': 'application/json',
           'Yona-Token': config.YONA.TO.USER_TOKEN
         })
-        .send(JSON.stringify({[itemType]: [data]}))
+        .send(JSON.stringify({ [itemType]: [data] }))
         .end(response => {
           if (this.isBadResponse(response.status)) {
             console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', yonApiUrl, response.status, response.statusMessage, JSON.stringify(data));
           }
-          console.log('response: ', response.body);
+          console.log(response.body);
           this.okCount++;
           if (cb) {
             return cb(response);
@@ -57,7 +58,7 @@ export default class YonaExport {
           if (this.isBadResponse(response.status)) {
             console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', apiUrl, response.status, response.statusMessage);
           }
-          console.error('response: ', response.body);
+          console.log(response.body);
           if (cb) {
             return cb(response);
           }
@@ -73,83 +74,6 @@ export default class YonaExport {
     }
 
     return files;
-  }
-
-  getUrlToPost(item, parent) {
-    if(parent && parent.type){
-      switch (parent.type) {
-        case 'ISSUE_POST':
-          return config.YONA.TO.SERVER
-              + path.join(
-                  config.YONA.TO.ROOT_CONTEXT,
-                  '/-_-api/v1/owners/',
-                  config.YONA.TO.OWNER_NAME,
-                  '/projects/',
-                  config.YONA.TO.PROJECT_NAME,
-                  '/issues',
-                  parent.number.toString(),
-                  '/comments');
-          break;
-        case 'BOARD_POST':
-          return config.YONA.TO.SERVER
-              + path.join(
-                  config.YONA.TO.ROOT_CONTEXT,
-                  '/-_-api/v1/owners/',
-                  config.YONA.TO.OWNER_NAME,
-                  '/projects/',
-                  config.YONA.TO.PROJECT_NAME,
-                  '/posts',
-                  parent.number.toString(),
-                  '/comments');
-        default:
-          throw Error("Unknown item: ", item);
-          return undefined;
-          break;
-      }
-    }
-
-    switch (item.type) {
-      case 'ISSUE_POST':
-        return config.YONA.TO.SERVER
-            + path.join(
-                config.YONA.TO.ROOT_CONTEXT,
-                '/-_-api/v1/owners/',
-                config.YONA.TO.OWNER_NAME,
-                '/projects/',
-                config.YONA.TO.PROJECT_NAME,
-                '/issues');
-      case 'BOARD_POST':
-        return config.YONA.TO.SERVER
-            + path.join(
-                config.YONA.TO.ROOT_CONTEXT,
-                '/-_-api/v1/owners/',
-                config.YONA.TO.OWNER_NAME,
-                '/projects/',
-                config.YONA.TO.PROJECT_NAME,
-                '/posts');
-      default:
-        throw Error("Unknown item: ", item);
-        return undefined;
-        break;
-    }
-  }
-
-  getItemType(item, parent) {
-    const itemType = item.type || parent.type;
-    switch (itemType) {
-      case 'ISSUE_POST':
-        return 'issues';
-      case 'BOARD_POST':
-        return 'posts';
-      default:
-        throw Error("Unknown item: ", item);
-        return undefined;
-        break;
-    }
-  }
-
-  getOkCount() {
-    return this.okCount;
   }
 
   pushFiles(post, parent, cb) {
@@ -168,7 +92,7 @@ export default class YonaExport {
     post.attachments.forEach(attachment => {
       // TODO Check this path is correct
       const filePath = path.join(attachmentBaseDir, attachment.id.toString(), attachment.name);
-      if(!fse.existsSync(filePath)){
+      if (!fse.existsSync(filePath)) {
         console.error("File not found! - ", __dirname, filePath);
       }
 
@@ -196,7 +120,6 @@ export default class YonaExport {
               }
             });
       }, counter * 500 + 1000);
-
       counter++;
     });
   }

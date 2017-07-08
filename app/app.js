@@ -72,7 +72,6 @@ function pushPostings(exportedData, cb) {
   const yonaExport = new YonaExport();
   let counter = 0;
   exportedData.posts.forEach(posting => {
-    counter++;
     setTimeout(() => {
       yonaExport.pushFiles(posting, null, response => {
         if (response.status === 201) {
@@ -81,19 +80,21 @@ function pushPostings(exportedData, cb) {
             pushComments(posting);
           }
         }
+        counter++;
+        if (!exportedData.posts || counter === exportedData.posts.length) {
+          if(cb) cb();
+        }
       });
     }, counter * 500);
-    if (!exportedData.posts || counter === exportedData.posts.length) {
-      if(cb) cb();
-    }
+
   });
 }
 
 function pushIssues(exportedData, cb) {
   const yonaExport = new YonaExport();
   let counter = 0;
+  let delay = 0;
   exportedData.issues.forEach(issue => {
-    counter++;
     setTimeout(() => {
       yonaExport.pushFiles(issue, null, response => {
         if (response.status === 201) {
@@ -102,11 +103,13 @@ function pushIssues(exportedData, cb) {
             pushComments(issue);
           }
         }
+        counter++;
+        if (!exportedData.issues || counter === exportedData.issues.length) {
+          if(cb) cb();
+        }
       });
-    }, counter * 500);
-    if (!exportedData.issues || counter === exportedData.issues.length) {
-      if(cb) cb();
-    }
+    }, delay * 500);
+    delay++;
   });
 }
 
@@ -120,7 +123,7 @@ function pushComments (item) {
       yonaExport.pushFiles(comment, item, response => {
         console.log(response.body);
       })
-    }, commentCounter * 300);
+    }, commentCounter * 500);
   })
 }
 
