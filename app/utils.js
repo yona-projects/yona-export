@@ -30,16 +30,16 @@ export const replaceAttchementFileId = (content, filelist) => {
   if(!filelist || filelist.length === 0) {
     return content;
   }
-  return content.replace(/!\[(.*?)]\(.*?\)/g, (a, filename) => {
+  return content.replace(/\[(.*?)]\(.*?\)/g, (a, filename) => {
     let found = '';
-    if(filelist){
+    if (filelist) {
       filelist.some(file => {
-        if(file.name === filename) {
+        if (file.name === filename) {
           found = file;
           return true;
         }
       });
     }
-    return `![${found.name}](/files/${found.uploadedFile})`;
+    return `[${found.name}](/files/${found.uploadedFile})`;
   });
 };
