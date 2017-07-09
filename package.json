@@ -21,6 +21,7 @@
     "commander": "^2.11.0",
     "fs-extra": "^3.0.1",
     "gray-matter": "^2.1.0",
+    "humanize-plus": "^1.8.2",
     "moment": "^2.15.2",
     "unirest": "^0.5.1"
   },

@@ -164,11 +164,15 @@ function exportFrom() {
             config.YONA.FROM.PROJECT_NAME,
         );
 
-        writeItems(response.body.issues, path.join(exportDir, '/issues/'));
-        writeItems(response.body.posts, path.join(exportDir, '/posts/'));
-        writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
-
+        console.log('Received exporting data and saving to ', exportDir);
         writeOriginalJson(response.body, exportDir);
+
+        console.log("Saving issues...");
+        writeItems(response.body.issues, path.join(exportDir, '/issues/'));
+        console.log("Saving postings...");
+        writeItems(response.body.posts, path.join(exportDir, '/posts/'));
+        console.log("Saving milestones...");
+        writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
       });
 }
 
@@ -178,16 +182,15 @@ function isBadResponse(statusCode) {
 }
 
 function writeOriginalJson(item, exportDir, cb) {
-  fse.outputFile(`${exportDir}.json`, JSON.stringify(item), err => {
-    if (err) console.error(err);
-    if(cb) cb();
-  })
+  fse.outputFileSync(`${exportDir}.json`, JSON.stringify(item));
 }
 
 function writeItems(items, exportDir) {
+  let itemCounter = 0;
   items.forEach(item => {
-    fse.outputFile(`${exportDir}${getDefaultFileName(item)}`, createHeader(item), err => {
-      if (err) console.error(err);
-    })
+    itemCounter++;
+    setTimeout(() => {
+      fse.outputFileSync(`${exportDir}${getDefaultFileName(item)}`, createHeader(item));
+    }, itemCounter* 100)
   });
 }

@@ -19,7 +19,11 @@ export const download = (attachment, cb) => {
       })
       .end(response => {
         if (response.status !== 200) {
-          console.log(`${yonaFileUrl} : ${response.status} Error`);
+          console.log(`${yonaFileUrl} : ${response.status} ${response.body} Error`);
+          if(response.status === undefined) {
+            console.log('try again! - ', yonaFileUrl);
+            return download(attachment, cb);
+          }
         }
         if(cb && typeof cb === 'function') {
           cb(response);
