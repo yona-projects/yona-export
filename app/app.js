@@ -57,16 +57,28 @@ function importTo() {
     posts: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/posts`
   };
 
-  yonaExport.importData(users, apiUrl.users, () =>
-      yonaExport.importData(project, apiUrl.projects, () =>
-          yonaExport.importData({ milestones: exportedData.milestones }, apiUrl.milestones, () => {
-            yonaExport.importData({ labels: exportedData.labels }, apiUrl.labels, () => {
-              pushIssues(exportedData, () => {
-                pushPostings(exportedData);
-              });
-            })
-          })
-      ));
+  console.log('importing users..');
+  yonaExport.importData(users, apiUrl.users, () => {
+    console.log('importing project: ', project.name);
+    yonaExport.importData(project, apiUrl.projects, () => {
+      console.log('importing milestones if exists');
+      yonaExport.importData({ milestones: exportedData.milestones }, apiUrl.milestones, () => {
+        console.log('creating labels if exists');
+        yonaExport.importData({ labels: exportedData.labels }, apiUrl.labels, () => {
+          let issueCount = exportedData.issues && exportedData.issues.length || 0;
+          console.log('importing issues if exists: ', issueCount );
+          pushIssues(exportedData, () => {
+            let postingsCount = exportedData.posts && exportedData.posts.length || 0;
+            console.log('importing postings if exists: ', postingsCount );
+            pushPostings(exportedData, () => {
+              console.log('Done...');
+            });
+          });
+        })
+      })
+    })
+  });
+
 }
 
 function pushPostings(exportedData, cb) {
@@ -98,6 +110,7 @@ function pushIssues(exportedData, cb) {
   exportedData.issues.forEach(issue => {
     setTimeout(() => {
       yonaExport.pushFiles(issue, null, response => {
+        console.log("::", response.status);
         if (response.status === 201) {
           issue.number = response.body[0].location.split('/').pop();
           if (issue.comments && issue.comments.length > 0) {
@@ -105,6 +118,7 @@ function pushIssues(exportedData, cb) {
           }
         }
         counter++;
+        console.log(issue.title + ":" + counter + ": " + exportedData.issues.length);
         if (!exportedData.issues || counter === exportedData.issues.length) {
           if(cb) cb();
         }

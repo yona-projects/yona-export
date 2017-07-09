@@ -4,18 +4,26 @@ import { download } from './download';
 
 let totalWillDownload = 0, totalDidDownload = 0;
 let queuedFiles = {};
+let showInQueuedFiles = function (queuedFiles) {
+  let keys = Object.keys(queuedFiles);
+  if (keys && keys.length > 0) {
+    console.log(`in queued files: `);
+    console.dir(queuedFiles);
+  }
+};
+
 const downloadAttachments = function (attachments = []) {
   if (attachments.length > 0) {
     const file = attachments.pop();
     totalWillDownload++;
     console.log(`${totalDidDownload} / ${totalWillDownload} is done. ${file.name} ${Humanize.filesize(file.size)} will be download at ${file.id}.`);
     queuedFiles[file.id] = { name: file.name, size: Humanize.filesize(file.size) };
-    download(file, () => {
+
+    download(file, response => {
       totalDidDownload++;
       console.log(`............ ${file.name}: ${Humanize.filesize(file.size)} downloaded.`);
       delete queuedFiles[file.id];
-      console.log(`in queued files: `);
-      console.dir(queuedFiles);
+      showInQueuedFiles(queuedFiles);
       downloadAttachments(attachments);
     })
   }

@@ -35,7 +35,7 @@ export default class YonaExport {
         })
         .send(JSON.stringify({ [itemType]: [data] }))
         .end(response => {
-          if (this.isBadResponse(response.status)) {
+          if (isBadResponse(response.status)) {
             console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', yonApiUrl, response.status, response.statusMessage, JSON.stringify(data));
           }
           console.log(response.body);
@@ -55,7 +55,7 @@ export default class YonaExport {
         })
         .send(JSON.stringify(payload))
         .end(response => {
-          if (this.isBadResponse(response.status)) {
+          if (isBadResponse(response.status)) {
             console.log('오류 발생!! HTTP 응답코드를 확인하세요! ', apiUrl, response.status, response.statusMessage);
           }
           console.log(response.body);
@@ -73,6 +73,7 @@ export default class YonaExport {
       });
     }
 
+    console.log('temporary upload files ', files);
     return files;
   }
 
@@ -83,48 +84,62 @@ export default class YonaExport {
       return;
     }
 
-    const attachmentBaseDir = path.join(config.EXPORT_BASE_DIR,
-        config.YONA.FROM.OWNER_NAME,
-        config.YONA.FROM.PROJECT_NAME,
-        config.ATTACHMENTS_DIR);
+    let attachments = [...post.attachments];
+    let updatedAttachments = [];
 
-    let counter = 0;
-    post.attachments.forEach(attachment => {
+    console.log(post.id, ' to upload file count ', attachments.length);
+    uploadFiles(attachments, cb);
+
+    function uploadFiles(attachments, cb) {
+      if(attachments && attachments.length > 0){
+        const file = attachments.pop();
+        return upload(file, post.author.loginId, post.author.email, attachment => {
+          console.log(++uploaded, 'is done');
+          updatedAttachments.push(attachment);
+          uploadFiles(attachments, cb);
+        })
+      }
+      post.attachments = updatedAttachments;
+      const yonaExport = new YonaExport();
+      yonaExport.pushPost(post, parent, cb);
+    }
+
+    function upload(attachment, authorLoginId, authorEmail, cb){
+      const attachmentBaseDir = path.join(config.EXPORT_BASE_DIR,
+          config.YONA.FROM.OWNER_NAME,
+          config.YONA.FROM.PROJECT_NAME,
+          config.ATTACHMENTS_DIR);
+
+      console.log('to upload file: ', attachment);
       // TODO Check this path is correct
       const filePath = path.join(attachmentBaseDir, attachment.id.toString(), attachment.name);
       if (!fse.existsSync(filePath)) {
         console.error("File not found! - ", __dirname, filePath);
       }
 
-      setTimeout(() => {
-        unirest.post(config.YONA.TO.SERVER + '/files')
-            .headers({
-              'Accept': 'application/json',
-              'Content-Type': 'multipart/form-data',
-              'Yona-Token': config.YONA.TO.USER_TOKEN
-            })
-            .field('authorLoginId', post.author.loginId)
-            .field('authorEmail', post.author.email)
-            .attach('filePath', filePath) // Attachment
-            .end(response => {
-              if (this.isBadResponse(response.status)) {
-                console.log('Attachment 오류 발생!! HTTP 응답코드를 확인하세요! ',
-                    response.status, response.statusMessage, filePath);
-              } else {
-                attachment.uploadedFile = response.headers.location.split('/')[2];   // eg. location: /files/71
-              }
-
-              uploaded++;
-              if (uploaded === post.attachments.length) {
-                this.pushPost(post, parent, cb);
-              }
-            });
-      }, counter * 500 + 1000);
-      counter++;
-    });
+      unirest.post(config.YONA.TO.SERVER + '/files')
+          .headers({
+            'Accept': 'application/json',
+            'Content-Type': 'multipart/form-data',
+            'Yona-Token': config.YONA.TO.USER_TOKEN
+          })
+          .field('authorLoginId', authorLoginId)
+          .field('authorEmail', authorEmail)
+          .attach('filePath', filePath) // Attachment
+          .end(response => {
+            if (isBadResponse(response.status)) {
+              console.log('Attachment 오류 발생!! HTTP 응답코드를 확인하세요! ',
+                  response.status, response.statusMessage, filePath);
+            } else {
+              attachment.uploadedFile = response.headers.location.split('/')[2];   // eg. location: /files/71
+            }
+            console.log(response.body);
+            cb(attachment);
+          });
+    }
   }
+}
 
-  isBadResponse(statusCode) {
-    return [200, 201].indexOf(statusCode) === -1;
-  }
+function isBadResponse(statusCode) {
+  return [200, 201].indexOf(statusCode) === -1;
 }

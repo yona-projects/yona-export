@@ -27,6 +27,7 @@ export function getUrlToPost(item, parent, config) {
                 parent.number.toString(),
                 '/comments');
       default:
+        console.log('Unknown item error: ', item);
         throw Error('Unknown item: ', item);
     }
   }
@@ -51,6 +52,7 @@ export function getUrlToPost(item, parent, config) {
               config.YONA.TO.PROJECT_NAME,
               '/posts');
     default:
+      console.log('Unknown item error: ', item);
       throw Error('Unknown item: ', item);
   }
 }
@@ -59,10 +61,13 @@ export function getItemType(item, parent) {
   const itemType = item.type || parent.type;
   switch (itemType) {
     case 'ISSUE_POST':
+    case 'ISSUE_COMMENT':
       return 'issues';
+    case 'NONISSUE_COMMENT':
     case 'BOARD_POST':
       return 'posts';
     default:
+      console.log('Unknown item error: ', item);
       throw Error('Unknown item: ', item);
   }
 }

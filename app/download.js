@@ -15,7 +15,7 @@ export const download = (attachment, cb) => {
   unirest.get(yonaFileUrl)
       .headers({
         'Accept': '*/*',
-        'Yona-Token': config.YONA.USER_TOKEN
+        'Yona-Token': config.YONA.FROM.USER_TOKEN
       })
       .end(response => {
         if (response.status !== 200) {
