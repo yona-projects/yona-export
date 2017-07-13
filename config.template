@@ -1,0 +1,18 @@
+export default {
+  EXPORT_BASE_DIR: 'exported',
+  ATTACHMENTS_DIR: 'files',
+  YONA: {
+    FROM: {
+      OWNER_NAME: '${owner_name}',
+      PROJECT_NAME: '${prj_name}',
+      ROOT_CONTEXT: ''
+    },
+    TO: {
+      SERVER: '${server}',
+      USER_TOKEN: '${user_token}',
+      OWNER_NAME: '${owner_name}',
+      PROJECT_NAME: '${prj_name}',
+      ROOT_CONTEXT: ''
+    }
+  }
+};
