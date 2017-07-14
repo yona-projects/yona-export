@@ -47,6 +47,25 @@ export default class YonaExport {
   }
 
   importData(payload, apiUrl, cb) {
+    if(!payload) {
+      console.log('Nothing to import: ', apiUrl);
+      if (cb) { return cb(); }
+      return;
+    }
+
+    if(payload && payload instanceof Array){
+      if(payload.length === 0){
+        if (cb) { return cb(); }
+        return;
+      }
+    }
+
+    if(payload && payload instanceof Object){
+      if( Object.keys(payload).length === 0 ){
+        if (cb) { return cb(); }
+        return;
+      }
+    }
     unirest.post(apiUrl)
         .headers({
           'Accept': 'application/json',
