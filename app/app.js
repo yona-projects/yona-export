@@ -84,6 +84,12 @@ function importTo() {
 function pushPostings(exportedData, cb) {
   const yonaExport = new YonaExport();
   let counter = 0;
+
+  if (!exportedData.posts || exportedData.posts.length === 0) {
+    if (cb) cb();
+    return;
+  }
+
   exportedData.posts.forEach(posting => {
     setTimeout(() => {
       yonaExport.pushFiles(posting, null, response => {
@@ -107,6 +113,12 @@ function pushIssues(exportedData, cb) {
   const yonaExport = new YonaExport();
   let counter = 0;
   let delay = 0;
+
+  if (!exportedData.issues || exportedData.issues.length === 0) {
+    if (cb) cb();
+    return;
+  }
+
   exportedData.issues.forEach(issue => {
     setTimeout(() => {
       yonaExport.pushFiles(issue, null, response => {
