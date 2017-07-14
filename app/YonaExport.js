@@ -54,6 +54,7 @@ export default class YonaExport {
     }
 
     if(payload && payload instanceof Array){
+      console.log('Nothing to import Arrry: ', apiUrl);
       if(payload.length === 0){
         if (cb) { return cb(); }
         return;
@@ -61,6 +62,7 @@ export default class YonaExport {
     }
 
     if(payload && payload instanceof Object){
+      console.log('Nothing to import Object: ', apiUrl);
       if( Object.keys(payload).length === 0 ){
         if (cb) { return cb(); }
         return;
