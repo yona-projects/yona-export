@@ -60,6 +60,12 @@ Project Import 실행
 npm start -- import
 ```
 
+Project Import Bulk 실행
+---
+
+```
+./bulk.sh
+```
 
 Test
 ---
