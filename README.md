@@ -48,7 +48,14 @@ Project Export 실행
 ---
 
 ```
+## Export with full download
 npm start -- export
+
+or
+
+## Export JSON meta file only
+npm start -- export jsonOnly
+
 ```
 
 exported 폴더아래에 항목별로 폴더들이 생기고 md 파일로 내려 받아집니다. 텍스트 에디터로 열어보면 해당 내용들을 살펴볼 수 있습니다.
