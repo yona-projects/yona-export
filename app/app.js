@@ -16,7 +16,7 @@ const main = (from, to) => {
 
   if( getOptions() === 'export' ){
     console.log(`start exporting from ${from.OWNER_NAME}/${from.PROJECT_NAME}`);
-    exportFrom();
+    exportFrom(isJsonOnly());
   }
   if( getOptions() === 'import' ){
     console.log(`start importing to ${to.OWNER_NAME}/${to.PROJECT_NAME}`);
@@ -32,6 +32,18 @@ function getOptions(){
   if(program.args && program.args.length > 0) {
     return program.args[0];
   }
+}
+
+function isJsonOnly(){
+  program.parse(process.argv);
+
+  if(program.args && program.args.length > 0 && program.args[1]) {
+    if(program.args[1].toLocaleLowerCase() === 'jsonOnly'.toLocaleLowerCase()){
+      console.log('\nExporting JSON file only!\n');
+      return true;
+    }
+  }
+  return false;
 }
 
 function importTo() {
@@ -57,13 +69,13 @@ function importTo() {
     posts: to.SERVER + `/-_-api/v1/owners/${to.OWNER_NAME}/projects/${to.PROJECT_NAME}/posts`
   };
 
-  console.log('importing users..');
+  console.log('\nImporting users..');
   yonaExport.importData(users, apiUrl.users, () => {
-    console.log('importing project: ', project.name);
+    console.log('\nimporting project: ', project.name);
     yonaExport.importData(project, apiUrl.projects, () => {
-      console.log('importing milestones if exists');
+      console.log('\nImporting milestones if exists');
       yonaExport.importData({ milestones: exportedData.milestones }, apiUrl.milestones, () => {
-        console.log('creating labels if exists');
+        console.log('\ncreating labels if exists');
         yonaExport.importData({ labels: exportedData.labels }, apiUrl.labels, () => {
           let issueCount = exportedData.issues && exportedData.issues.length || 0;
           console.log('\n\nImporting issues if exists: ', issueCount );
@@ -165,7 +177,7 @@ function parseProject(source, to) {
   }
 }
 
-function exportFrom() {
+function exportFrom(isJsonOnly = false) {
   unirest.get(yonaProjectExportUrl)
       .headers({
         'Accept': 'application/json',
@@ -185,14 +197,16 @@ function exportFrom() {
         console.log('Received exporting data and saving to ', exportDir);
         writeOriginalJson(response.body, exportDir);
 
-        console.log("Saving issues...");
-        writeItems(response.body.issues, path.join(exportDir, '/issues/'), () => {
-          console.log("Saving postings...");
-          writeItems(response.body.posts, path.join(exportDir, '/posts/'), () => {
-            console.log("Saving milestones...");
-            writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
+        if(!isJsonOnly){
+          console.log("Saving issues...");
+          writeItems(response.body.issues, path.join(exportDir, '/issues/'), () => {
+            console.log("Saving postings...");
+            writeItems(response.body.posts, path.join(exportDir, '/posts/'), () => {
+              console.log("Saving milestones...");
+              writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
+            });
           });
-        });
+        }
       });
 }
 
