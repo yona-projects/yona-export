@@ -66,10 +66,10 @@ function importTo() {
         console.log('creating labels if exists');
         yonaExport.importData({ labels: exportedData.labels }, apiUrl.labels, () => {
           let issueCount = exportedData.issues && exportedData.issues.length || 0;
-          console.log('importing issues if exists: ', issueCount );
+          console.log('\n\nImporting issues if exists: ', issueCount );
           pushIssues(exportedData, () => {
             let postingsCount = exportedData.posts && exportedData.posts.length || 0;
-            console.log('importing postings if exists: ', postingsCount );
+            console.log('\n\nImporting postings if exists: ', postingsCount );
             pushPostings(exportedData, () => {
               console.log('Done...');
             });
@@ -110,47 +110,55 @@ function pushPostings(exportedData, cb) {
 }
 
 function pushIssues(exportedData, cb) {
-  const yonaExport = new YonaExport();
-  let counter = 0;
-  let delay = 0;
-
   if (!exportedData.issues || exportedData.issues.length === 0) {
     if (cb) cb();
     return;
   }
 
-  exportedData.issues.forEach(issue => {
-    setTimeout(() => {
-      yonaExport.pushFiles(issue, null, response => {
-        console.log("::", response.status);
-        if (response.status === 201) {
-          issue.number = response.body[0].location.split('/').pop();
-          if (issue.comments && issue.comments.length > 0) {
-            pushComments(issue);
+  let issues = [...exportedData.issues];
+
+  console.log('Target issues:', issues && issues.length);
+  return pushIssue(issues, cb);
+}
+
+function pushIssue(issues, cb){
+  const yonaExport = new YonaExport();
+  let issue = issues.pop();
+  console.log('\n\nTitle: ', issue.title);
+  yonaExport.pushFiles(issue, null, response => {
+    console.log("Response: ", response.status);
+    if (response.status === 201) {
+      issue.number = response.body[0].location.split('/').pop();
+      if (issue.comments && issue.comments.length > 0) {
+        let comments = [...issue.comments];
+        return pushComments(comments, issue, ()=> {
+          if (issues && issues.length > 0) {
+            return pushIssue(issues);
           }
-        }
-        counter++;
-        console.log(issue.title + ":" + counter + ": " + exportedData.issues.length);
-        if (!exportedData.issues || counter === exportedData.issues.length) {
-          if(cb) cb();
-        }
-      });
-    }, delay * 500);
-    delay++;
+
+          if (cb) return cb();
+        });
+      }
+    }
+
+    if (issues && issues.length > 0) {
+      return pushIssue(issues);
+    }
+
+    if (cb) return cb();
   });
 }
 
-function pushComments (item) {
+function pushComments (comments, parent, cb) {
   const yonaExport = new YonaExport();
-  let commentCounter = 0;
 
-  item.comments.forEach(comment => {
-    commentCounter++;
-    setTimeout(() => {
-      yonaExport.pushFiles(comment, item, response => {
-        console.log(response.body);
-      })
-    }, commentCounter * 500);
+  let comment = comments.pop();
+  yonaExport.pushFiles(comment, parent, response => {
+    console.log(response.body);
+    if( comments && comments.length > 0) {
+      return pushComments(comments, parent, cb)
+    }
+    if(cb) return cb(response);
   })
 }
 

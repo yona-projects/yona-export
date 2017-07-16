@@ -1,6 +1,7 @@
 import unirest from 'unirest';
 import path from 'path';
 import fse from 'fs-extra';
+import Humanize from 'humanize-plus';
 import config from '../config';
 import { replaceAttchementFileId } from './utils';
 import { getItemType, getUrlToPost } from './exportHelper';
@@ -101,21 +102,20 @@ export default class YonaExport {
   pushFiles(post, parent, cb) {
     let uploaded = 0;
     if (!post.attachments || post.attachments.length === 0) {
-      this.pushPost(post, parent, cb);
-      return;
+      return this.pushPost(post, parent, cb);
     }
 
     let attachments = [...post.attachments];
     let updatedAttachments = [];
 
-    console.log(post.id, ' to upload file count ', attachments.length);
+    console.log(`id: ${post.id}, Files: ${attachments.length}\n`);
     uploadFiles(attachments, cb);
 
     function uploadFiles(attachments, cb) {
       if(attachments && attachments.length > 0){
         const file = attachments.pop();
         return upload(file, post.author.loginId, post.author.email, attachment => {
-          console.log(++uploaded, 'is done');
+          console.log(`\nDone ${++uploaded} \n`);
           updatedAttachments.push(attachment);
           uploadFiles(attachments, cb);
         })
@@ -131,7 +131,8 @@ export default class YonaExport {
           config.YONA.FROM.PROJECT_NAME,
           config.ATTACHMENTS_DIR);
 
-      console.log('to upload file: ', attachment);
+      console.log('File: ', { name: attachment.name, size: Humanize.filesize(attachment.size) });
+
       // TODO Check this path is correct
       const filePath = path.join(attachmentBaseDir, attachment.id.toString(), attachment.name);
       if (!fse.existsSync(filePath)) {
@@ -154,7 +155,7 @@ export default class YonaExport {
             } else {
               attachment.uploadedFile = response.headers.location.split('/')[2];   // eg. location: /files/71
             }
-            console.log(response.body);
+            console.log(`Uploaded: ${response.body.name} ${response.body.url}`);
             cb(attachment);
           });
     }
