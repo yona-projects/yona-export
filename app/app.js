@@ -82,31 +82,15 @@ function importTo() {
 }
 
 function pushPostings(exportedData, cb) {
-  const yonaExport = new YonaExport();
-  let counter = 0;
-
   if (!exportedData.posts || exportedData.posts.length === 0) {
     if (cb) cb();
     return;
   }
 
-  exportedData.posts.forEach(posting => {
-    setTimeout(() => {
-      yonaExport.pushFiles(posting, null, response => {
-        if (response.status === 201) {
-          posting.number = response.body[0].location.split('/').pop();
-          if (posting.comments && posting.comments.length > 0) {
-            pushComments(posting);
-          }
-        }
-        counter++;
-        if (!exportedData.posts || counter === exportedData.posts.length) {
-          if(cb) cb();
-        }
-      });
-    }, counter * 500);
+  let postings = [...exportedData.posts];
 
-  });
+  console.log('Target postings:', postings && postings.length);
+  return pushItem(postings, cb);
 }
 
 function pushIssues(exportedData, cb) {
@@ -118,22 +102,22 @@ function pushIssues(exportedData, cb) {
   let issues = [...exportedData.issues];
 
   console.log('Target issues:', issues && issues.length);
-  return pushIssue(issues, cb);
+  return pushItem(issues, cb);
 }
 
-function pushIssue(issues, cb){
+function pushItem(items, cb){
   const yonaExport = new YonaExport();
-  let issue = issues.pop();
-  console.log('\n\nTitle: ', issue.title);
-  yonaExport.pushFiles(issue, null, response => {
+  let item = items.pop();
+  console.log('\n\nTitle: ', item.title);
+  yonaExport.pushFiles(item, null, response => {
     console.log("Response: ", response.status);
     if (response.status === 201) {
-      issue.number = response.body[0].location.split('/').pop();
-      if (issue.comments && issue.comments.length > 0) {
-        let comments = [...issue.comments];
-        return pushComments(comments, issue, ()=> {
-          if (issues && issues.length > 0) {
-            return pushIssue(issues);
+      item.number = response.body[0].location.split('/').pop();
+      if (item.comments && item.comments.length > 0) {
+        let comments = [...item.comments];
+        return pushComments(comments, item, ()=> {
+          if (items && items.length > 0) {
+            return pushItem(items, cb);
           }
 
           if (cb) return cb();
@@ -141,8 +125,8 @@ function pushIssue(issues, cb){
       }
     }
 
-    if (issues && issues.length > 0) {
-      return pushIssue(issues);
+    if (items && items.length > 0) {
+      return pushItem(items, cb);
     }
 
     if (cb) return cb();
