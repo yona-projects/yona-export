@@ -12,45 +12,73 @@ let showInQueuedFiles = function (queuedFiles) {
   }
 };
 
-const downloadAttachments = function (attachments = []) {
+const downloadAttachments = function (attachments = [], cb) {
   if (attachments.length > 0) {
     const file = attachments.pop();
     totalWillDownload++;
-    console.log(`${totalDidDownload} / ${totalWillDownload} is done. ${file.name} ${Humanize.filesize(file.size)} will be download at ${file.id}.`);
+    console.log(`${totalDidDownload} / ${totalWillDownload} is done. ${file.name} ${Humanize.filesize(file.size)} will be downloaded at ${file.id}.`);
     queuedFiles[file.id] = { name: file.name, size: Humanize.filesize(file.size) };
 
-    download(file, response => {
+    return download(file, response => {
       totalDidDownload++;
       console.log(`............ ${file.name}: ${Humanize.filesize(file.size)} downloaded.`);
       delete queuedFiles[file.id];
       showInQueuedFiles(queuedFiles);
-      downloadAttachments(attachments);
+      downloadAttachments(attachments, cb);
     })
   }
+  if(cb) return cb();
 };
 
-export const createHeader = (post) => {
+export const createHeader = (post, cb) => {
   let header = { ...post };
   if (post.createdAt) {
     header.createdAt = post.createdAt;
   }
+
+  console.log(`\n${post.number}. ${post.title}\n`);
+
   if (post.comments) {
     header.comments = stripKeys(post.comments, ['type']);
-    post.comments.forEach(comment => {
-      if (comment.attachments) {
-        console.log(`${comment.attachments.length} files will be download.`);
-        downloadAttachments(comment.attachments);
-      }
+    downloadCommentsAttachments([...header.comments], () => {
+      downladPostAttachments(post, () => {
+        header.attachments = stripKeysFromAttachment(post.attachments);
+        delete header.body;
+        const matterContent = matter.stringify(post.body || '', header, { delims: '```' }).trim();
+        if(cb) return cb(matterContent);
+      });
+    });
+  } else {
+    downladPostAttachments(post, () => {
+      header.attachments = stripKeysFromAttachment(post.attachments);
+      delete header.body;
+      const matterContent = matter.stringify(post.body || '', header, { delims: '```' }).trim();
+      if(cb) return cb(matterContent);
     });
   }
-  if (post.attachments) {
-    header.attachments = stripKeysFromAttachment(post.attachments);
-    console.log(`${post.attachments.length} files will be download.`);
-    downloadAttachments(header.attachments);
+
+  function downloadCommentsAttachments(comments, cb){
+    if(comments && comments.length > 0){
+      let comment = comments.pop();
+      if (comment.attachments && comment.attachments.length > 0) {
+        console.log(`${comment.attachments.length} files will be download.`);
+        return downloadAttachments(comment.attachments, () => {
+          downloadCommentsAttachments(comments, cb);
+        });
+      }
+    }
+
+    if(cb) return cb();
   }
 
-  delete header.body;
-  return matter.stringify(post.body || '', header, { delims: '```' }).trim();
+  function downladPostAttachments(post, cb) {
+    if (post.attachments && post.attachments.length > 0) {
+      console.log(`${post.attachments.length} files will be download.`);
+      let attachments = [...post.attachments];
+      return downloadAttachments(attachments, cb);
+    }
+    if(cb) return cb();
+  }
 };
 
 export default {

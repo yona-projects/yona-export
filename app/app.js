@@ -186,11 +186,13 @@ function exportFrom() {
         writeOriginalJson(response.body, exportDir);
 
         console.log("Saving issues...");
-        writeItems(response.body.issues, path.join(exportDir, '/issues/'));
-        console.log("Saving postings...");
-        writeItems(response.body.posts, path.join(exportDir, '/posts/'));
-        console.log("Saving milestones...");
-        writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
+        writeItems(response.body.issues, path.join(exportDir, '/issues/'), () => {
+          console.log("Saving postings...");
+          writeItems(response.body.posts, path.join(exportDir, '/posts/'), () => {
+            console.log("Saving milestones...");
+            writeItems(response.body.milestones, path.join(exportDir, '/milestones/'));
+          });
+        });
       });
 }
 
@@ -203,12 +205,18 @@ function writeOriginalJson(item, exportDir, cb) {
   fse.outputFileSync(`${exportDir}.json`, JSON.stringify(item));
 }
 
-function writeItems(items, exportDir) {
-  let itemCounter = 0;
-  items.forEach(item => {
-    itemCounter++;
-    setTimeout(() => {
-      fse.outputFileSync(`${exportDir}${getDefaultFileName(item)}`, createHeader(item));
-    }, itemCounter* 100)
-  });
+function writeItems(items, exportDir, cb) {
+  writeItem([...items], cb);
+
+  function writeItem(items, cb) {
+    if(items && items.length > 0){
+      let item = items.pop();
+      return createHeader(item, matter => {
+        fse.outputFileSync(`${exportDir}${getDefaultFileName(item)}`, matter);
+        writeItem(items, cb);
+      })
+    }
+
+    if(cb) return cb();
+  }
 }
