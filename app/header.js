@@ -38,11 +38,13 @@ export const createHeader = (post, cb) => {
 
   console.log(`\n${post.number}. ${post.title}\n`);
 
-  if (post.comments) {
+  if (post.comments && post.comments.length > 0) {
+    console.log('comments: ' + post.comments.length);
+
     header.comments = stripKeys(post.comments, ['type']);
     downloadCommentsAttachments([...header.comments], () => {
       downladPostAttachments(post, () => {
-        header.attachments = stripKeysFromAttachment(post.attachments);
+        header.attachments = post.attachments || [];
         delete header.body;
         const matterContent = matter.stringify(post.body || '', header, { delims: '```' }).trim();
         if(cb) return cb(matterContent);
@@ -50,7 +52,7 @@ export const createHeader = (post, cb) => {
     });
   } else {
     downladPostAttachments(post, () => {
-      header.attachments = stripKeysFromAttachment(post.attachments);
+      header.attachments = post.attachments || [];
       delete header.body;
       const matterContent = matter.stringify(post.body || '', header, { delims: '```' }).trim();
       if(cb) return cb(matterContent);
@@ -65,6 +67,8 @@ export const createHeader = (post, cb) => {
         return downloadAttachments(comment.attachments, () => {
           downloadCommentsAttachments(comments, cb);
         });
+      } else {
+        return downloadCommentsAttachments(comments, cb);
       }
     }
 
