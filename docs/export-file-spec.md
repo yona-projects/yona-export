@@ -27,14 +27,14 @@ Export 설명
       {
         "loginId": "doortts",
         "name": "doortts",
-        "email": "doortts@gmail.com"
+        "email": "doortts@gomail.com"
       }
   ],
   "authors": [  // 프로젝트 멤버는 아니지만 글을 쓴 적이 있는 사용자들. , 로 이어서 적습니다. [선택적]
     {
       "loginId": "doortts",
       "name": "doortts",
-      "email": "doortts@gmail.com"
+      "email": "doortts@gomail.com"
     }
   ],
   "memberCount": 1, // import 때는 사용안함
@@ -43,7 +43,7 @@ Export 설명
       "loginId": "doortts",
       "name": "doortts",
       "role": "manager",  // 프로젝트 멤버의 권한. manager, member 두 가지 중 선택
-      "email": "doortts@gmail.com"
+      "email": "doortts@gomail.com"
     }
   ],
   "issueCount": 4,   // import 때는 사용안함
@@ -74,7 +74,7 @@ Export 설명
       "author": {
         "loginId": "doortts",
         "name": "doortts",
-        "email": "doortts@gmail.com"
+        "email": "doortts@gomail.com"
       },
       "createdAt": "2016-02-23 PM 06:38:41 +0900",
       "updatedAt": "2017-07-06 AM 12:40:58 +0900",
@@ -143,7 +143,7 @@ Export 설명
       "author": {
         "loginId": "doortts",
         "name": "doortts",
-        "email": "doortts@gmail.com"
+        "email": "doortts@gomail.com"
       },
       "createdAt": "2016-12-05 PM 04:03:09 +0900",
       "updatedAt": "2016-12-05 PM 04:21:22 +0900",
