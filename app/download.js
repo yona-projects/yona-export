@@ -12,22 +12,26 @@ export const download = (attachment, cb) => {
       config.ATTACHMENTS_DIR);
 
   fse.ensureDirSync(path.join(attachmentBaseDir, attachment.id.toString()));
-  unirest.get(yonaFileUrl)
-      .headers({
-        'Accept': '*/*',
-        'Yona-Token': config.YONA.FROM.USER_TOKEN
-      })
-      .end(response => {
-        if (response.status !== 200) {
-          console.log(`${yonaFileUrl} : ${response.status} ${response.body} Error`);
-          if(response.status === undefined) {
-            console.log('try again! - ', yonaFileUrl);
-            return download(attachment, cb);
+  try {
+    unirest.get(yonaFileUrl)
+        .headers({
+          'Accept': '*/*',
+          'Yona-Token': config.YONA.FROM.USER_TOKEN
+        })
+        .end(response => {
+          if (response.status !== 200) {
+            console.log(`${yonaFileUrl} : ${response.status} ${response.body} Error`);
+            if(response.status === undefined) {
+              console.log('try again! - ', yonaFileUrl);
+              return download(attachment, cb);
+            }
           }
-        }
-        if(cb && typeof cb === 'function') {
-          cb(response);
-        }
-      }).pipe(fse.createWriteStream(path.join(attachmentBaseDir, attachment.id.toString(), attachment.name)));
+          if(cb && typeof cb === 'function') {
+            cb(response);
+          }
+        }).pipe(fse.createWriteStream(path.join(attachmentBaseDir, attachment.id.toString(), attachment.name)));
+  } catch (e) {
+    console.error(e);
+  }
 };
 
