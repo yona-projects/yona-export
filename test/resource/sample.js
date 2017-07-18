@@ -25,7 +25,7 @@ export default {
   "issueCount": 4,
   "postCount": 4,
   "milestoneCount": 0,
-  "labels": {},
+  "labels": [],
   "issues": [
     {
       "number": 1,
@@ -38,16 +38,18 @@ export default {
         "email": "doortts@gmail.com"
       },
       "createdAt": "2016-02-23 PM 06:38:41 +0900",
-      "updatedAt": "2017-04-03 AM 01:27:12 +0900",
+      "updatedAt": "2017-07-06 AM 12:40:58 +0900",
       "body": "\r\n[squash-two-commit.mov](/files/26)",
-      "state": "CLOSED",
+      "state": "OPEN",
       "attachments": [
         {
           "id": 26,
           "name": "squash-two-commit.mov",
           "hash": "5d0d012eedac57fa4f852a21ef8149c7297d9113",
+          "containerType": "ISSUE_POST",
           "mimeType": "video/quicktime",
           "size": 53283448,
+          "containerId": "16",
           "createdDate": 1456220247000,
           "ownerLoginId": "doortts"
         }
@@ -72,8 +74,10 @@ export default {
           "id": 1240,
           "name": "419347042392.png",
           "hash": "9fad6ff50721f2e80c37cc82dcebc6abb280ba80",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 206526,
+          "containerId": "212",
           "createdDate": 1486210317000,
           "ownerLoginId": "doortts"
         },
@@ -81,8 +85,10 @@ export default {
           "id": 1241,
           "name": "564211050576.png",
           "hash": "18f92abe6ca30e24a1c1207b3f6d8fdec41c5076",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 479438,
+          "containerId": "212",
           "createdDate": 1486210436000,
           "ownerLoginId": "doortts"
         },
@@ -90,8 +96,10 @@ export default {
           "id": 1242,
           "name": "139178009420.png",
           "hash": "3c104b79eea1646e74d4c4e2f0219e3156e99aa8",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 17729,
+          "containerId": "212",
           "createdDate": 1486211407000,
           "ownerLoginId": "doortts"
         },
@@ -99,8 +107,10 @@ export default {
           "id": 1243,
           "name": "903815119890.png",
           "hash": "ed0ee8aae441714f766987423f392beae405656d",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 34254,
+          "containerId": "212",
           "createdDate": 1486211733000,
           "ownerLoginId": "doortts"
         },
@@ -108,8 +118,10 @@ export default {
           "id": 1244,
           "name": "394776276234.png",
           "hash": "39000c846bbb87a3b272149f59e2723ea1a9b21c",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 64347,
+          "containerId": "212",
           "createdDate": 1486212380000,
           "ownerLoginId": "doortts"
         },
@@ -117,8 +129,10 @@ export default {
           "id": 1245,
           "name": "408273274940.png",
           "hash": "b0e1f1571a20cc4bf951cc2d6ca3a04b19c31727",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 129227,
+          "containerId": "212",
           "createdDate": 1486212901000,
           "ownerLoginId": "doortts"
         },
@@ -126,8 +140,10 @@ export default {
           "id": 1246,
           "name": "357216066579.png",
           "hash": "25db08bfc5075da3d8a76ab125946db4a1cd7679",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 60962,
+          "containerId": "212",
           "createdDate": 1486213470000,
           "ownerLoginId": "doortts"
         },
@@ -135,8 +151,10 @@ export default {
           "id": 1247,
           "name": "1403877902834.png",
           "hash": "13603631a3b60c885f66c7aec5a2ebfe1f1c3399",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 66174,
+          "containerId": "212",
           "createdDate": 1486213613000,
           "ownerLoginId": "doortts"
         },
@@ -144,8 +162,10 @@ export default {
           "id": 1248,
           "name": "277805944087.png",
           "hash": "3db4438aa9354a5c84ac08503178203e42f481c5",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 242725,
+          "containerId": "212",
           "createdDate": 1486213934000,
           "ownerLoginId": "doortts"
         },
@@ -153,8 +173,10 @@ export default {
           "id": 1249,
           "name": "978789723877.png",
           "hash": "ba3227327a50c94212018bc14820fb0639c30f7e",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 24273,
+          "containerId": "212",
           "createdDate": 1486214062000,
           "ownerLoginId": "doortts"
         },
@@ -162,8 +184,10 @@ export default {
           "id": 1250,
           "name": "152484476839.png",
           "hash": "0f7f3505102807403ca3a8a3efa18036f897d490",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 26758,
+          "containerId": "212",
           "createdDate": 1486214426000,
           "ownerLoginId": "doortts"
         },
@@ -171,8 +195,10 @@ export default {
           "id": 1251,
           "name": "615164117321.png",
           "hash": "87647ba5089491f1983cdd731132435e664a989b",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 57982,
+          "containerId": "212",
           "createdDate": 1486214672000,
           "ownerLoginId": "doortts"
         }
@@ -197,8 +223,10 @@ export default {
           "id": 1374,
           "name": "127382934504.png",
           "hash": "188c1ea8536cf934eec49cf25761419e663f1650",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 148860,
+          "containerId": "278",
           "createdDate": 1490191223000,
           "ownerLoginId": "doortts"
         },
@@ -206,8 +234,10 @@ export default {
           "id": 1375,
           "name": "752124825079.png",
           "hash": "fbdb9bc7a934977c88517d4a0b8e58bd37d503fc",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 112506,
+          "containerId": "278",
           "createdDate": 1490191276000,
           "ownerLoginId": "doortts"
         },
@@ -215,8 +245,10 @@ export default {
           "id": 1376,
           "name": "424300711973.png",
           "hash": "d2003a18cbe4212e05007bb0b3d1f6085c70843f",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 86973,
+          "containerId": "278",
           "createdDate": 1490191302000,
           "ownerLoginId": "doortts"
         },
@@ -224,8 +256,10 @@ export default {
           "id": 1377,
           "name": "1384768976033.png",
           "hash": "c451af1549f39ab5b1acdb3d608ba39e97d276c8",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 62751,
+          "containerId": "278",
           "createdDate": 1490191812000,
           "ownerLoginId": "doortts"
         },
@@ -233,8 +267,10 @@ export default {
           "id": 1378,
           "name": "905062093945.png",
           "hash": "bc9a40f47d32aa10dc98fe2648d382c6eef60b8e",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 195627,
+          "containerId": "278",
           "createdDate": 1490192074000,
           "ownerLoginId": "doortts"
         },
@@ -242,8 +278,10 @@ export default {
           "id": 1379,
           "name": "361941480268.png",
           "hash": "7878004dd1df57aefd313768c4b34b1afc980016",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 535224,
+          "containerId": "278",
           "createdDate": 1490193472000,
           "ownerLoginId": "doortts"
         },
@@ -251,8 +289,10 @@ export default {
           "id": 1380,
           "name": "725332981059.png",
           "hash": "2ebbeb814f0441f6ad5fa9435d19044e2806d0cb0297e750cabebff326091a81",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 31905,
+          "containerId": "278",
           "createdDate": 1490344143000,
           "ownerLoginId": "doortts"
         }
@@ -260,6 +300,7 @@ export default {
       "comments": [
         {
           "id": 166,
+          "type": "ISSUE_COMMENT",
           "author": {
             "loginId": "clear",
             "name": "Genie",
@@ -289,8 +330,10 @@ export default {
           "id": 1422,
           "name": "91988127553.png",
           "hash": "0427cf33dd4ac95f4784c73ab563d0c9c57204b7e3516d8c1dd2a6e7be9007f4",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 45560,
+          "containerId": "354",
           "createdDate": 1493048667000,
           "ownerLoginId": "doortts"
         },
@@ -298,8 +341,10 @@ export default {
           "id": 1423,
           "name": "1104884501166.png",
           "hash": "560e57296c140ba67ece209a1fedb2a1facd45eff3e66e727205d650d24f19f8",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 17382,
+          "containerId": "354",
           "createdDate": 1493048669000,
           "ownerLoginId": "doortts"
         },
@@ -307,8 +352,10 @@ export default {
           "id": 1424,
           "name": "716819897445.png",
           "hash": "01e7e05b866ae134576cb500f2f317f5f02de3c8c73a28b88726dd5385fe5447",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 72228,
+          "containerId": "354",
           "createdDate": 1493048920000,
           "ownerLoginId": "doortts"
         },
@@ -316,8 +363,10 @@ export default {
           "id": 1425,
           "name": "480754833108.png",
           "hash": "bbcde3cd190fc3a8a084813d23314519daa8c26d539d2856157eab7c10da56a0",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 98018,
+          "containerId": "354",
           "createdDate": 1493048973000,
           "ownerLoginId": "doortts"
         },
@@ -325,8 +374,10 @@ export default {
           "id": 1426,
           "name": "1369462490622.png",
           "hash": "ca3e3f96453fc5905e51cd7c0a5a3abc029bdb317c921bd35641648fb2d4b8e3",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 417778,
+          "containerId": "354",
           "createdDate": 1493049646000,
           "ownerLoginId": "doortts"
         },
@@ -334,8 +385,10 @@ export default {
           "id": 1427,
           "name": "485763418175.png",
           "hash": "b79ceb3538ca88a8df39ff9171f56627776bdc4e1bb277a8d8ee61068ffdad30",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 379172,
+          "containerId": "354",
           "createdDate": 1493056956000,
           "ownerLoginId": "doortts"
         },
@@ -343,8 +396,10 @@ export default {
           "id": 1428,
           "name": "321422552149.png",
           "hash": "d6866bed271eea13ec84b9febaaa67dd9845759c0509f520d94a34f49f9216da",
+          "containerType": "ISSUE_POST",
           "mimeType": "image/png",
           "size": 147297,
+          "containerId": "354",
           "createdDate": 1493057020000,
           "ownerLoginId": "doortts"
         }
@@ -370,8 +425,10 @@ export default {
           "id": 1174,
           "name": "1062903130392.png",
           "hash": "75ef05a82db5a43b6c506ae64a16ad6259c754e9",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 86545,
+          "containerId": "616",
           "createdDate": 1480921387000,
           "ownerLoginId": "doortts"
         },
@@ -379,8 +436,10 @@ export default {
           "id": 1175,
           "name": "340495589796.png",
           "hash": "40457154313e8b4f16eeba1a0aead402e563394e",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 363571,
+          "containerId": "616",
           "createdDate": 1480921592000,
           "ownerLoginId": "doortts"
         },
@@ -388,8 +447,10 @@ export default {
           "id": 1176,
           "name": "1231517962394.png",
           "hash": "48dc75abd414b80fa169733dddae6b8e02f11122",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 11645,
+          "containerId": "616",
           "createdDate": 1480921749000,
           "ownerLoginId": "doortts"
         },
@@ -397,8 +458,10 @@ export default {
           "id": 1177,
           "name": "840565839278.png",
           "hash": "d2ea6cbf39c1d04d22348830d34d93d409e1d0b3",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 21172,
+          "containerId": "616",
           "createdDate": 1480921874000,
           "ownerLoginId": "doortts"
         },
@@ -406,8 +469,10 @@ export default {
           "id": 1178,
           "name": "1038905586468.png",
           "hash": "94d78027ae1e98d16fd2aef3473f39a2ea5e162c",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 181666,
+          "containerId": "616",
           "createdDate": 1480921918000,
           "ownerLoginId": "doortts"
         },
@@ -415,8 +480,10 @@ export default {
           "id": 1179,
           "name": "885595177158.png",
           "hash": "a2f9eaba048a3b5f747cbd1f7d34187e4228d62a",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 65700,
+          "containerId": "616",
           "createdDate": 1480922040000,
           "ownerLoginId": "doortts"
         },
@@ -424,8 +491,10 @@ export default {
           "id": 1180,
           "name": "771740990926.png",
           "hash": "ca26f449a785418deee7e0e2e78909d06543683e",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 213828,
+          "containerId": "616",
           "createdDate": 1480922337000,
           "ownerLoginId": "doortts"
         }
@@ -449,8 +518,10 @@ export default {
           "id": 1233,
           "name": "706907280287.png",
           "hash": "d417c58076e09d7e0aa3ad4f3939510abaf1fece",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 43572,
+          "containerId": "651",
           "createdDate": 1486207098000,
           "ownerLoginId": "doortts"
         },
@@ -458,8 +529,10 @@ export default {
           "id": 1234,
           "name": "1061860945830.png",
           "hash": "c9b54c450cd6e8f5cc7aa30b02187280718ea30d",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 53093,
+          "containerId": "651",
           "createdDate": 1486207120000,
           "ownerLoginId": "doortts"
         },
@@ -467,8 +540,10 @@ export default {
           "id": 1235,
           "name": "1418152236389.png",
           "hash": "b5a5d0bbb929b503e9392c8c9f088cfe64c1c826",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 50017,
+          "containerId": "651",
           "createdDate": 1486207148000,
           "ownerLoginId": "doortts"
         },
@@ -476,8 +551,10 @@ export default {
           "id": 1236,
           "name": "1031331654559.png",
           "hash": "0a56138914366ddcbd8d6dbe5bf2bbcbc74d8dca",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 91989,
+          "containerId": "651",
           "createdDate": 1486207168000,
           "ownerLoginId": "doortts"
         },
@@ -485,8 +562,10 @@ export default {
           "id": 1237,
           "name": "894913455275.png",
           "hash": "22763075a9877422d8c53d43550f38bff4818d5c",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 49517,
+          "containerId": "651",
           "createdDate": 1486207188000,
           "ownerLoginId": "doortts"
         },
@@ -494,8 +573,10 @@ export default {
           "id": 1238,
           "name": "427005679498.png",
           "hash": "36e1d6af5652253e73de0fcf44bd2ce46c64cb33",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 112916,
+          "containerId": "651",
           "createdDate": 1486207205000,
           "ownerLoginId": "doortts"
         },
@@ -503,8 +584,10 @@ export default {
           "id": 1239,
           "name": "566826910100.png",
           "hash": "bf88ba96f190703dcf9defbe3e2b70b97c0122f8",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 252627,
+          "containerId": "651",
           "createdDate": 1486207478000,
           "ownerLoginId": "doortts"
         }
@@ -542,8 +625,10 @@ export default {
           "id": 1273,
           "name": "62092177716.png",
           "hash": "16d89cf95df73d724a5133976924044d18d6e8cf",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 179458,
+          "containerId": "656",
           "createdDate": 1486699276000,
           "ownerLoginId": "doortts"
         },
@@ -551,8 +636,10 @@ export default {
           "id": 1274,
           "name": "1344702792288.png",
           "hash": "90d801f7a555c3c5851b69125d3f1e652b0328a5",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 17219,
+          "containerId": "656",
           "createdDate": 1486699427000,
           "ownerLoginId": "doortts"
         },
@@ -560,8 +647,10 @@ export default {
           "id": 1275,
           "name": "1290636349781.png",
           "hash": "43ee3b56e28fbe25c420311499b329469f076318",
+          "containerType": "BOARD_POST",
           "mimeType": "image/png",
           "size": 97916,
+          "containerId": "656",
           "createdDate": 1486700322000,
           "ownerLoginId": "doortts"
         }
@@ -569,6 +658,7 @@ export default {
       "comments": [
         {
           "id": 59,
+          "type": "NONISSUE_COMMENT",
           "author": {
             "loginId": "postimg",
             "name": "더미",
@@ -579,6 +669,7 @@ export default {
         },
         {
           "id": 60,
+          "type": "NONISSUE_COMMENT",
           "author": {
             "loginId": "doortts",
             "name": "doortts",
