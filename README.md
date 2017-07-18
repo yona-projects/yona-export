@@ -92,5 +92,5 @@ Export/Import 스펙
 
 Contributors
 ---
-- @hurcy 님께서 Bulk Import shell을 만들어 주셨습니다. 고맙습니다
+- [@hurcy](https://github.com/hurcy) 님께서 Bulk Import shell을 만들어 주셨습니다. 고맙습니다
 
