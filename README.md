@@ -8,10 +8,13 @@ Yona Export
 필요권한
 ---
   - Export: Export 대상 프로젝트의 관리자 이상의 권한(토큰)이 필요합니다
-  - Import: Import 할 대상의 소유자/관리자이어야 하며 타깃 인스턴스 Yona의 사이트 관리자 권한(토큰)이 필요합니다.
+  - Import: Import 할 대상의 소유자/관리자이어야 하며 타깃 인스턴스 Yona의 사이트 관리자 권한(토큰)이 필요합니다.ㅅ
 
 설치
 ---
+- https://nodejs.org/en/ 에서 nodejs 설치 
+- 이후 아래 명령을 실행해서 기본 환경을 구성합니다.
+
 ```
 git clone https://github.com/yona-projects/yona-export.git
 cd yona-export
