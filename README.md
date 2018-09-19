@@ -55,13 +55,13 @@ export default {
 Project Export 실행
 ---
 
+- Case1. Export with full download
 ```
-## Export with full download
 npm start -- export
+```
 
-or
-
-## Export JSON meta file only
+- Case2. Export JSON meta file only
+```
 npm start -- export jsonOnly
 
 ```
