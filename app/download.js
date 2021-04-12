@@ -1,7 +1,7 @@
 import unirest from 'unirest';
 import fse from 'fs-extra';
 import path from 'path';
-import config from '../config';
+import config from '../config.js';
 
 export const download = (attachment, cb) => {
   let yonaFileUrl = config.YONA.FROM.SERVER + '/files/' + attachment.id;

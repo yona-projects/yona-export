@@ -5,8 +5,8 @@ export default {
     FROM: {
       SERVER: 'https://repo.yona.io',
       USER_TOKEN: '5bY3UE4QZrwHtJ0G+QnXaNCM3F0Ymr6invqIZyFdszU=',
-      OWNER_NAME: 'yona-projects',
-      PROJECT_NAME: 'yona-help',
+      OWNER_NAME: 'kins',
+      PROJECT_NAME: 'AtomCARE',
       ROOT_CONTEXT: ''
     },
     TO: {

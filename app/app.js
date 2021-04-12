@@ -2,10 +2,10 @@ import unirest from 'unirest';
 import fse from 'fs-extra';
 import path from 'path';
 import program from 'commander';
-import config from '../config';
-import { getDefaultFileName } from './utils';
-import { createHeader } from './header';
-import YonaExport from './YonaExport';
+import config from '../config.js';
+import { getDefaultFileName } from './utils.js';
+import { createHeader } from './header.js';
+import YonaExport from './YonaExport.js';
 
 const yonaProjectExportUrl = config.YONA.FROM.SERVER + '/-_-api/v1'
     + '/owners/' + config.YONA.FROM.OWNER_NAME

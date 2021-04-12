@@ -1,6 +1,6 @@
 import matter from 'gray-matter';
 import Humanize from 'humanize-plus';
-import { download } from './download';
+import { download } from './download.js';
 
 let totalWillDownload = 0, totalDidDownload = 0;
 let queuedFiles = {};

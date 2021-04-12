@@ -2,9 +2,9 @@ import unirest from 'unirest';
 import path from 'path';
 import fse from 'fs-extra';
 import Humanize from 'humanize-plus';
-import config from '../config';
-import { replaceAttchementFileId } from './utils';
-import { getItemType, getUrlToPost } from './exportHelper';
+import config from '../config.js';
+import { replaceAttchementFileId } from './utils.js';
+import { getItemType, getUrlToPost } from './exportHelper.js';
 
 /**
  * config에 지정된 Yona 서버로 글을 보내는 기능을 담당하는 클래스
