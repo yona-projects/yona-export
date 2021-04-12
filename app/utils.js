@@ -26,6 +26,15 @@ export const getDateString = (timestamp) => {
   return date.format('YYYYMMDD');
 };
 
+export const issueApiDateString = (timestamp) => {
+  if(!timestamp) {
+    return 'NO__DATE';
+  }
+  moment.locale('en-US');
+  let date = moment(timestamp);
+  return date.format('YYYY-MM-DD A hh:mm:ss ZZ');
+};
+
 export const replaceAttchementFileId = (content, filelist) => {
   if(!filelist || filelist.length === 0) {
     return content;

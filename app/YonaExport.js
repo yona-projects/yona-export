@@ -20,6 +20,12 @@ export default class YonaExport {
   pushPost(post, parent, cb) {
     let files = this.collectAttachmentFileIds(post);
     post.body = replaceAttchementFileId(post.body, post.attachments);
+    if (post.createdAt != null) {
+      post.createdAt = issueApiDateString(post.createdAt);
+    }
+    if (post.updatedAt != null) {
+      post.updatedAt = issueApiDateString(post.updatedAt);
+    }
     let data = {
       'temporaryUploadFiles': files,
       ...post
