@@ -1,5 +1,5 @@
 /* eslint no-undef: "off" */
-import YonaExport from '../app/YonaExport';
+import YonaExport from '../app/YonaExport.js';
 import path from 'path';
 import fse from 'fs-extra';
 import sample from './resource/yona-projects/yona-help.js';

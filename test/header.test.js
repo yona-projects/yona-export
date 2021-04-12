@@ -1,5 +1,5 @@
-import { createHeader } from '../app/header';
-import json from './resource/exports';
+import { createHeader } from '../app/header.js';
+import json from './resource/exports.js';
 
 describe('header', () => {
   it('createHeader', () => {

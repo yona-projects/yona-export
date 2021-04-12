@@ -1,8 +1,8 @@
 /* eslint no-undef: "off" */
 import crypto from 'crypto';
 import fse from 'fs-extra';
-import { download } from '../app/download';
-import json from './resource/exports';
+import { download } from '../app/download.js';
+import json from './resource/exports.js';
 import path from 'path';
 
 describe('download', () => {

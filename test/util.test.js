@@ -1,7 +1,7 @@
 /* eslint no-undef: "off" */
-import { getTitle, getDefaultFileName, lpadZero, replaceAttchementFileId } from '../app/utils';
-import json from './resource/yona-projects/yona-help';
-import sample from './resource/sample';
+import { getTitle, getDefaultFileName, lpadZero, replaceAttchementFileId } from '../app/utils.js';
+import json from './resource/yona-projects/yona-help.js';
+import sample from './resource/sample.js';
 
 const attachments = [
   {

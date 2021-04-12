@@ -1,6 +1,6 @@
 /* eslint no-undef: "off" */
-import { getItemType, getUrlToPost } from '../app/exportHelper';
-import config from '../config';
+import { getItemType, getUrlToPost } from '../app/exportHelper.js';
+import config from '../config.js';
 import sample from './resource/yona-projects/yona-help.js';
 
 
