@@ -3,7 +3,7 @@ import path from 'path';
 import fse from 'fs-extra';
 import Humanize from 'humanize-plus';
 import config from '../config.js';
-import { replaceAttchementFileId } from './utils.js';
+import { replaceAttchementFileId, issueApiDateString } from './utils.js';
 import { getItemType, getUrlToPost } from './exportHelper.js';
 
 /**
