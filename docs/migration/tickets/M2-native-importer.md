@@ -1,0 +1,88 @@
+---
+id: M2
+title: 2.0 Native Importer
+status: 미착수 (핵심 가정 검증 완료 — design.md 7절)
+repo: yona-projects/yona (next, Kotlin — 로컬 `~/yona`는 분기된 별도 브랜치이므로 upstream을 직접 받아 작업)
+depends_on: [M1]
+---
+
+# M2. 2.0 Native Importer
+
+## 목표
+M1 포맷의 아카이브를 업로드받아 비동기로 프로젝트를 생성하는 2.0 내장 기능. 목표1(1.6→2.0)과 목표2(2.0→2.0) 공용 핵심 컴포넌트.
+
+## 범위
+- `ImportJob` 엔티티/테이블 (상태, 진행률, 체크포인트, 결과 리포트) 영속화
+- 기존 `AsyncConfig` taskExecutor 활용 + 잡 재개(resume) 로직
+- **처리 순서 및 id 매핑** (design.md 3-2-a 표 참고): owner/타깃 프로젝트 사전검증 → users(+credentials+UserSetting) → project(+설정 필드) → labels → milestones → issues(+댓글) → posts(+댓글) → attachments → Watch/구독자 → IssueEvent 타임라인
+- **범위 확장(design.md 8절, 1.6 전체 기능 감사에서 포함 결정)**:
+  - project 생성 시 `siteurl`/`isCodeAccessibleMemberOnly`/`isUsingReviewerCount`/`defaultReviewerCount`/`isCodeEnabled`/`isIssueEnabled`/`isPullRequestEnabled`/`isReviewEnabled`/`isMilestoneEnabled`/`isBoardEnabled` 필드를 아카이브 값 그대로 설정(2.0엔 `ProjectMenuSetting` 별도 엔티티 없이 `Project`에 평탄화되어 있음 — 정정, design.md 8절). **`isCodeAccessibleMemberOnly`는 보안 설정이라 값 유실 시 멤버 전용이던 코드가 공개로 노출될 수 있어 필수 필드로 취급.**
+  - user 생성 시 `UserSetting.loginDefaultPage`도 함께 저장(`users.ndjson`의 `loginDefaultPage`)
+  - `Watch`/`Unwatch`/`UserProjectNotification`(구독자 목록) — 누가 이슈/프로젝트를 구독 중이었는지 복원. 없으면 이관 후 원래 구독자가 알림을 못 받음
+  - `IssueEvent` 타임라인(상태/담당자/라벨 변경 이력) — `changeState()`를 여러 번 호출해 역사적으로 재현하기보다, import 시 `IssueEvent` 레코드를 직접 구성해 저장하는 편이 정확하고 부작용(알림 재발행)도 없음
+  - `legacyId → 신규 id` 매핑은 milestone/issue/comment(이슈·포스트 공통)/post 4종류만 필요(loginId/labelName은 이름으로 직접 참조하므로 매핑 불필요)
+  - **사전검증은 잡의 "최초 시도" 시점에만 수행** — 체크포인트 재개 시에는 건너뜀(재개 시점엔 이미 이 잡이 만든 부분 데이터가 있어 "비어있음" 검사가 항상 실패하므로 최초 1회만 검사)
+  - 댓글은 `legacyId` 오름차순(부모 먼저)으로 온다는 M1 포맷 불변식을 전제로, 매핑에 없는 `parentLegacyId`만 "진짜 고아"로 처리
+- 서비스 계층 직접 호출(REST 왕복 아님) — `IssueService.createIssue(..., explicitNumber, sendNotification)`/`PostingService.createPosting(..., explicitNumber)`를 그대로 재사용(design.md 7절에서 실제 코드로 확인됨)
+- **user 생성은 전용 경로 필요, 기존 벌크 API 재사용 금지**: `POST /-_-api/v1/users`(`UserController.createUserNode()`)는 임의 비밀번호로 계정을 잠가버려 "기존 비밀번호로 로그인 유지" 요건을 깬다(design.md 7절). 대신 `credentials.ndjson`의 `passwordHash`/`passwordSalt`를 그대로 넣은 `User` 엔티티를 구성해 `userService.createUser()`(단순 저장)로 저장한다.
+- **⚠️ 보안 — `UserState.SITE_ADMIN` 강제 강등**: `users.ndjson`의 `accountStatus`가 `SITE_ADMIN`이어도 M2는 무조건 `ACTIVE`로 바꿔서 생성한다(design.md 7절). 관리자 권한이 import 한 번으로 자동 부여되면 안 됨.
+- **유저 아바타**: `attachments`의 `containerType: "USER_AVATAR"` 항목을 유저 생성 이후 단계에서 연결(다른 첨부파일과 동일하게 9단계에서 처리, 아카이브의 `containerLegacyId`(loginId)를 1단계에서 만든 유저의 **신규 숫자 id**로 변환해 `containerId`로 넘김 — loginId 그대로 넘기면 안 됨)
+- **게시글 라벨**: `PostingService.createPosting()`에 `labelIds` 파라미터가 없으므로, `Posting(...)` 생성자에 `labels = resolvedLabelSet`을 직접 채워 넘긴다(design.md 7절). `notice`/`readme`는 그대로 값 전달(생성 시점엔 git 부작용 없음, 확인됨).
+- **라벨 생성**: `IssueLabelService.newLabelByCategoryName(projectId, categoryName, categoryIsExclusive, labelName, labelColor)` 하나로 카테고리 find-or-create + 라벨 생성이 한 번에 처리된다(별도 카테고리 단계 불필요, design.md 7절). 동일 카테고리+이름 라벨이 이미 있어 `null`이 반환되면 — 빈 프로젝트 전제상 정상 흐름에선 없어야 하므로 — 실패 처리하고 리포트에 남긴다.
+- **⚠️ 이슈/마일스톤도 생성 시 CLOSED로 바로 못 만듦(추가 발견)**: `createMilestone()`은 무조건 `state = OPEN`으로 강제하고, `createIssue()`도 `isDraft`에 따라 DRAFT/OPEN만 가능하다(design.md 7절). CLOSED 상태 이력을 보존하려면:
+  - 이슈: 생성 후 `IssueService.changeState(issueId, State.CLOSED, updaterLoginId)` 호출 필요 — 이 메서드도 `sendNotification` 파라미터가 없어 무조건 `ISSUE_STATE_CHANGED` 알림을 쏘고 `updatedDate`를 다시 `Instant.now()`로 덮어쓴다. **날짜 2차 보정은 반드시 `changeState()` 호출 다음에** 실행해야 한다(순서 바뀌면 도로 덮어써짐).
+  - 마일스톤: 생성 후 `MilestoneService.updateMilestone(milestoneId, title, contents, dueDate, State.CLOSED)` 호출 필요(알림 없음, 안전) — 단 title/contents/dueDate를 원본 값 그대로 다시 넘겨야 한다(안 그러면 그 필드들이 지워짐).
+- **⭐ 이슈 서브태스크(`parent`)**: `issues.ndjson`의 `parentLegacyId`를 2-pass로 연결 — 1차로 모든 이슈를 생성해 `legacyIssueId → newIssueId` 매핑을 완성한 뒤, 2차로 `parentLegacyId`가 있는 이슈만 순회하며 `issue.parent`를 설정하고 재저장한다(design.md 9절, `createIssue()`엔 parent 파라미터가 없음).
+- **⚠️ `history`(편집 이력) — Issue만 2차 보정 필요**: `createIssue()`는 `issue.history`를 무조건 `""`로 초기화한다(design.md 9절) — 아카이브에 `history` 값이 있으면 `createdDate` 보정과 같은 타이밍에 같이 재저장한다. **Posting은 `createPosting()`이 `history`를 안 건드려서** 생성 전 엔티티에 세팅해두면 그대로 저장됨(2차 보정 불필요).
+- **투표(`voters`)/`weight`**: `weight`는 `voters.size()`의 비정규화 캐시일 뿐이다(design.md 9절) — 아카이브의 `voters`(loginId 목록)를 해당 유저들의 신규 id로 채운 뒤, `weight`는 M2가 `voters.size`로 직접 계산해 설정한다(아카이브 값을 그대로 믿지 않음).
+- **이슈 공유(`sharers`)**: `IssueSharer(loginId, user, issue, created)`를 이슈 생성 후 `sharers`의 각 loginId에 대해 생성한다.
+- **첨부파일은 `AttachmentService.store(inputStream, name, containerType, containerId, ownerLoginId)`로 생성**(design.md 7절): `MultipartFile` 불필요, 추출한 로컬 파일을 `FileInputStream`으로 열어 그대로 전달. 내부적으로 SHA-256을 자체 재계산하므로, 반환된 `Attachment.hash`를 아카이브의 `sha256`과 대조해 전송 손상 검증에 활용할 수 있다. `containerId`는 검증 없이 그대로 쓰이므로 9단계(attachments) 처리 시 5~8단계 매핑에서 조회한 **신규 id**를 정확히 넘겨야 한다(틀리면 조용히 고아 첨부가 생김).
+- **⚠️ `createdDate`/`updatedDate` 2차 보정 필요**: `createIssue()`/`createPosting()`/`createIssueComment()`/`createPostingComment()`/`AttachmentService.store()` **전부** 생성 시각을 `Instant.now()`로 하드코딩한다(design.md 7절, 기존 코드에 날짜 보존 선례 없음 확인됨). 각 엔티티 생성 직후, 반환된 엔티티의 `createdDate`/`updatedDate`만 원본 값으로 바꿔 해당 리포지토리로 재저장한다(번호채번/알림/멘션 로직은 재실행되지 않으므로 사이드이펙트 없음).
+- **author/assignee/milestone/label 조회 실패 시 기존 legacy 호환 API의 "조용한 대체/누락" 패턴을 재사용하지 않는다**: `IssueApiController.newIssuesLegacyPath()`는 author를 못 찾으면 조용히 `currentUser`로 바꾸고, milestone/label은 조용히 빠뜨린다(design.md 7절). M2는 참조 대상을 못 찾으면 해당 항목을 실패 처리하고 리포트에 남긴다.
+- **선행 작업(M2 착수 전 작은 PR)**: `PostingService.createPosting()`, `CommentService.createIssueComment()`/`createPostingComment()`, **`IssueService.changeState()`** 에 `IssueService.createIssue()`와 동일한 패턴으로 `sendNotification: Boolean = true` 파라미터 추가 — 현재 이 넷은 억제 수단이 없어 무조건 알림을 발행함(design.md 7절 "새로 발견한 갭")
+- 알림 억제: 이슈는 기존 `sendNotification` 파라미터를 `false`로 호출, 나머지는 위 선행 작업으로 확보한 동일 파라미터 사용 — 별도의 `suppressNotifications` 컨텍스트/스레드로컬을 새로 만들 필요 없음
+- `manifest.counts` 대비 완전성 검증 + 실패/스킵 항목의 명시적 리포트(조용한 스킵 금지)
+- admin 업로드 API + 진행률/결과 조회 API
+- **본문 내 상호참조 보존** (design.md 4절)
+  - 타깃 프로젝트가 비어 있는지 사전 검증(비어있지 않으면 import 거부)
+  - 이슈/포스트를 원본 `number` 그대로 명시적으로 생성(auto-increment 미사용), import 완료 후 프로젝트의 다음 번호 카운터를 `max+1`로 보정
+  - loginId 충돌 해결 시 매핑 테이블(원본→최종)을 만들고, 본문/댓글의 `@loginId` 멘션에 2차 치환 패스로 반영
+  - 본문 내 커밋 해시 패턴(hex 7~40자) 건수를 감지해 import 리포트에 "저장소 히스토리 보존 여부 확인" 경고로 남김(치환은 시도 안 함)
+
+## 의존성
+M1 (아카이브 포맷)
+
+## Acceptance Criteria
+- [ ] M1 샘플 아카이브로 소규모 프로젝트 import 성공
+- [ ] 서버 재시작 후 중단된 잡이 체크포인트부터 재개됨을 통합테스트로 검증
+- [ ] import 중 알림이 실제로 발송되지 않음을 테스트로 검증
+- [ ] 의도적으로 깨뜨린 fixture(고아 답글 등)로 "조용한 스킵이 아니라 리포트에 기록"됨을 검증
+- [ ] import 후 원본과 동일한 `#N`으로 이슈/포스트가 조회됨을 검증(같은 아카이브를 두 번째 빈 프로젝트에 import해도 번호가 동일)
+- [ ] loginId가 충돌해 이름이 바뀐 fixture로 `@멘션` 텍스트가 새 loginId로 치환됨을 검증
+- [ ] 커밋 해시 패턴이 포함된 fixture로 리포트에 경고가 남는지 검증(본문 자체는 치환되지 않음을 함께 확인)
+- [ ] owner가 2.0에 없는 아카이브로 시도하면 명확한 에러로 즉시 거부됨을 검증
+- [ ] 강제 중단 후 재개 시나리오에서 "비어있음" 검증이 재실행되지 않고(이미 부분 데이터가 있어도) 정상 재개됨을 검증
+- [ ] `credentials.ndjson`의 legacy 해시로 만든 계정이 원래 비밀번호로 로그인 성공하고, 성공 직후 Argon2id로 재해싱됨을 검증
+- [ ] author loginId가 존재하지 않는 fixture로, 해당 이슈가 (조용한 대체 없이) 실패 처리되고 리포트에 남는지 검증
+- [ ] `accountStatus: "SITE_ADMIN"`인 fixture로 import해도 생성된 계정이 `ACTIVE`임을 검증
+- [ ] import된 이슈/포스트/댓글의 `createdDate`가 원본 아카이브 값과 정확히 일치함을 검증(오늘 날짜가 아님)
+- [ ] `USER_AVATAR` 첨부가 포함된 fixture로 유저 생성 후 아바타가 정상 연결됨을 검증
+- [ ] 첨부파일의 `createdDate`도 원본 값으로 보정됨을 검증
+- [ ] import된 첨부파일의 `Attachment.hash`(2.0이 재계산)와 아카이브 `sha256`이 일치함을 검증(불일치 시 리포트에 손상 경고)
+- [ ] 라벨이 붙은 게시글 fixture로 import 후 게시글에 라벨이 정상 연결됨을 검증
+- [ ] `isCodeAccessibleMemberOnly: true`인 fixture로 import 후 실제로 코드 접근이 멤버 전용으로 제한됨을 검증
+- [ ] `loginDefaultPage`가 설정된 유저 fixture로 import 후 해당 값이 `UserSetting`에 저장됨을 검증
+- [ ] 서브태스크(부모-자식 이슈) fixture로 import 후 `parent` 관계가 정확히 연결됨을 검증
+- [ ] `history`가 있는 이슈 fixture로 import 후 값이 유실되지 않음을 검증(Posting도 동일 검증)
+- [ ] 투표자가 있는 이슈 fixture로 import 후 `voters`와 `weight`가 일치함을 검증
+- [ ] `sharers`가 있는 이슈 fixture로 import 후 공유 대상이 정확히 연결됨을 검증
+- [ ] 같은 카테고리에 라벨이 여러 개인 fixture로 import 후 카테고리가 중복 생성되지 않고 하나로 공유됨을 검증
+- [ ] CLOSED 상태였던 이슈/마일스톤 fixture로 import 후 실제 상태가 CLOSED이고, `createdDate`/`updatedDate`가 여전히 원본 값과 일치함을 검증(changeState 이후 날짜가 덮어써지지 않았는지)
+
+## 미결 질문
+- 서비스 계층을 "직접 호출"할 때 기존 컨트롤러의 권한 체크(사이트관리자/매니저)를 어느 계층에서 재현할지
+- `ImportJob` 실패 시 부분 생성된 데이터의 롤백/정리 정책
+- 비어있지 않은 프로젝트로 import해야 하는 요구가 실제로 생기면 `#N` 보존 대신 본문 치환 전략으로 전환해야 함 — 그 시점에 별도 티켓으로 분리
+
+## 해결된 질문 (design.md 7절, 실제 코드 확인 완료)
+- ~~이슈/포스트 번호를 서비스 계층에서 명시적으로 설정하는 게 실제 엔티티 구조상 가능한지~~ → 가능. `explicitNumber` 파라미터가 이미 존재(`IssueService`/`PostingService` 둘 다).
