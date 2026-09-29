@@ -187,7 +187,7 @@ Yona 본문/댓글 텍스트는 `#N`(이슈·PR 번호), `@loginId`(멘션), 커
 - `PostingServiceImpl.createPosting()`은 `explicitNumber`는 있지만 `sendNotification`이 없어 생성 시 무조건 `publishNotification(..., EventType.NEW_POSTING, ...)` 호출
 - `CommentService.createIssueComment()`/`createPostingComment()`는 억제 파라미터 자체가 없어 무조건 `EventType.NEW_COMMENT` 발행
 
-→ M2 착수 전, `PostingService`/`CommentService`에 `IssueService`와 동일한 패턴으로 `sendNotification: Boolean = true` 파라미터를 추가하는 작은 선행 PR이 필요하다(패턴이 이미 있어 구현 난이도는 낮음).
+→ M2 착수 전, `PostingService`/`CommentService`에 `IssueService`와 동일한 패턴으로 `sendNotification: Boolean = true` 파라미터를 추가하는 작은 선행 PR이 필요하다(패턴이 이미 있어 구현 난이도는 낮음) — 티켓화: [M0](tickets/M0-notification-suppression-prereqs.md).
 
 ### users → issues 순서와 관련해 추가로 확인한 사실
 
@@ -249,7 +249,7 @@ M2 범위·AC에 반영.
 
 **⚠️ 새로 발견 — `createMilestone()`도 `createIssue()`와 같은 문제(강제 OPEN)를 갖고 있음**: `MilestoneServiceImpl.createMilestone()`은 파라미터로 어떤 state를 넘기든 **무조건 `milestone.state = State.OPEN`으로 덮어쓴다.** `createIssue()`가 `issue.state = if (isDraft) DRAFT else OPEN`으로 강제하는 것과 같은 패턴 — **CLOSED 상태의 과거 이슈/마일스톤을 생성 시점에 바로 만들 방법이 없다.** 지금까지 이 문제 자체를 문서화하지 않고 있었다(이번에 라벨/카테고리를 확인하다 같이 발견).
 
-- **이슈 CLOSED**: 생성 후 `IssueService.changeState(issueId, State.CLOSED, updaterLoginId)`를 호출해야 한다. 단 이 메서드는 `sendNotification` 파라미터가 없어 **무조건 `EventType.ISSUE_STATE_CHANGED` 알림을 발행**하고, `issue.updatedDate = Instant.now()`로 재설정한다. → (a) `PostingService`/`CommentService`와 마찬가지로 `changeState()`에도 `sendNotification: Boolean = true` 파라미터 추가가 필요한 선행 작업 목록에 들어간다. (b) 날짜 2차 보정(위 "createdDate 하드코딩" 절)은 **`changeState()` 호출 이후에** 해야 한다 — 순서가 바뀌면 `changeState()`가 `updatedDate`를 다시 지금 시각으로 덮어써 버린다.
+- **이슈 CLOSED**: 생성 후 `IssueService.changeState(issueId, State.CLOSED, updaterLoginId)`를 호출해야 한다. 단 이 메서드는 `sendNotification` 파라미터가 없어 **무조건 `EventType.ISSUE_STATE_CHANGED` 알림을 발행**하고, `issue.updatedDate = Instant.now()`로 재설정한다. → (a) `PostingService`/`CommentService`와 마찬가지로 `changeState()`에도 `sendNotification: Boolean = true` 파라미터 추가가 필요한 선행 작업([M0](tickets/M0-notification-suppression-prereqs.md))에 들어간다. (b) 날짜 2차 보정(위 "createdDate 하드코딩" 절)은 **`changeState()` 호출 이후에** 해야 한다 — 순서가 바뀌면 `changeState()`가 `updatedDate`를 다시 지금 시각으로 덮어써 버린다.
 - **마일스톤 CLOSED**: 생성 후 `MilestoneService.updateMilestone(milestoneId, title, contents, dueDate, State.CLOSED)`를 호출해야 한다. 이 메서드는 알림 발행이 없음(코드 확인 완료, 안전). 다만 title/contents/dueDate를 **원래 값 그대로 다시 넘겨야** 한다 — 안 그러면 이 호출이 그 필드들을 덮어써 버린다.
 
 ## 8. 1.6 전체 기능 감사 (누락 요소 점검)

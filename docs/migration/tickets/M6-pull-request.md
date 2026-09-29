@@ -16,7 +16,7 @@ PR(제목/본문/상태/리뷰 코멘트 등)을 M2와 같은 목표(번호 보�
 
 ## 이슈/포스트와의 핵심 차이 (design.md 8절, 실제 코드 확인)
 
-- **`explicitNumber` 파라미터가 없음**: `PullRequestService.createPullRequest()`는 항상 `findFirstByToProjectOrderByNumberDesc(toProject).number + 1`로 자동 채번. Issue/Posting과 동일한 패턴의 선행 PR(파라미터 추가)이 별도로 필요.
+- **`explicitNumber` 파라미터가 없음**: `PullRequestService.createPullRequest()`는 항상 `findFirstByToProjectOrderByNumberDesc(toProject).number + 1`로 자동 채번. **정정(2026-09-29)**: M6은 이 메서드 자체를 호출하지 않고 raw entity로 `number`를 직접 설정하기로 했으므로(아래 참고), 이 파라미터 추가는 실제로 불필요 — yona 코어에 대한 선행 PR 없음.
 - **번호 시퀀스가 이슈와 완전히 별개**: `(to_project_id, number)` UNIQUE. 이슈 `#N`과 PR `#N`이 같은 프로젝트에 동시에 존재할 수 있다 — **확인 완료(design.md 14절)**: `AutoLinkRenderer.toValidIssueLink()`는 `issueRepository`만 조회하고 PR은 아예 지원하지 않는다. `#N`은 본문에서 항상 이슈만 가리키므로, 이슈/PR 번호가 같아도 텍스트 해석 충돌은 발생하지 않는다.
 - **⚠️ `createPullRequest()`가 `processMergeCheck()`를 호출해 실제 JGit 병합/diff 계산을 수행함**: PR 생성 시점에 실제 git 저장소가 올바르게 존재해야 한다. **M1/M2는 저장소 없이도 완결되도록 설계했는데, PR은 그 전제가 깨진다.** → PR 이관은 DB 이관(M2)과 같은 타이밍에 자동 실행할 수 없고, **사람이 저장소 수동 이관을 끝낸 뒤 별도 단계로 실행**해야 한다. design.md 12절 결정(M2가 project를 생성하지 않고 운영자가 미리 만든 프로젝트를 대상으로 함)과 정확히 맞물려, 운영 절차가 **프로젝트 껍데기 생성(수동) → 저장소 push(수동) → M2 DB import(자동) → M6 PR import(자동)** 하나로 통일된다.
 - **확인 완료(design.md 14절)**: `processMergeCheck()`를 스킵하는 내장 메커니즘은 없다. **권장**: `createPullRequest()`를 호출하지 말고 `PullRequest` 엔티티를 직접 구성해 `pullRequestRepository.save()`로 저장(다른 곳과 동일한 "비즈니스 메서드 우회, raw 저장" 패턴) — 대량의 이미 종결된 과거 PR마다 실제 JGit 병합 재계산을 돌릴 필요가 없다.

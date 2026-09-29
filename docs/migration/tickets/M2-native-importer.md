@@ -3,7 +3,7 @@ id: M2
 title: 2.0 Native Importer
 status: 미착수 (핵심 가정 검증 완료 — design.md 7절)
 repo: yona-projects/yona (next, Kotlin) — 로컬 작업 위치: `~/yona-convert/yona`(`next` 브랜치, origin=yona-projects/yona, 확인 시점 0 ahead/12 behind — `git pull`로 최신화 후 작업). 로컬 `~/yona`는 1.16 별도 리팩터링 브랜치라 2.0 작업과 무관.
-depends_on: [M1]
+depends_on: [M1, M0]
 ---
 
 # M2. 2.0 Native Importer
@@ -47,7 +47,7 @@ M1 포맷의 아카이브를 업로드받아 비동기로 프로젝트를 생성
 - **첨부파일은 `AttachmentService.store(inputStream, name, containerType, containerId, ownerLoginId)`로 생성**(design.md 7절): `MultipartFile` 불필요, 추출한 로컬 파일을 `FileInputStream`으로 열어 그대로 전달. 내부적으로 SHA-256을 자체 재계산하므로, 반환된 `Attachment.hash`를 아카이브의 `sha256`과 대조해 전송 손상 검증에 활용할 수 있다. `containerId`는 검증 없이 그대로 쓰이므로 9단계(attachments) 처리 시 5~8단계 매핑에서 조회한 **신규 id**를 정확히 넘겨야 한다(틀리면 조용히 고아 첨부가 생김).
 - **⚠️ `createdDate`/`updatedDate` 2차 보정 필요**: `createIssue()`/`createPosting()`/`createIssueComment()`/`createPostingComment()`/`AttachmentService.store()` **전부** 생성 시각을 `Instant.now()`로 하드코딩한다(design.md 7절, 기존 코드에 날짜 보존 선례 없음 확인됨). Project는 M2가 생성하지 않으므로(12절) 해당 없음. 각 엔티티 생성 직후, 반환된 엔티티의 해당 필드만 원본 값으로 바꿔 리포지토리로 재저장한다(번호채번/알림/멘션 로직은 재실행되지 않으므로 사이드이펙트 없음).
 - **author/assignee/milestone/label 조회 실패 시 기존 legacy 호환 API의 "조용한 대체/누락" 패턴을 재사용하지 않는다**: `IssueApiController.newIssuesLegacyPath()`는 author를 못 찾으면 조용히 `currentUser`로 바꾸고, milestone/label은 조용히 빠뜨린다(design.md 7절). M2는 참조 대상을 못 찾으면 해당 항목을 실패 처리하고 리포트에 남긴다.
-- **선행 작업(M2 착수 전 작은 PR)**: `PostingService.createPosting()`, `CommentService.createIssueComment()`/`createPostingComment()`, **`IssueService.changeState()`** 에 `IssueService.createIssue()`와 동일한 패턴으로 `sendNotification: Boolean = true` 파라미터 추가 — 현재 이 넷은 억제 수단이 없어 무조건 알림을 발행함(design.md 7절 "새로 발견한 갭")
+- **선행 작업 → [M0](M0-notification-suppression-prereqs.md)로 분리**: `PostingService.createPosting()`, `CommentService.createIssueComment()`/`createPostingComment()`, `IssueService.changeState()`에 `sendNotification: Boolean = true` 추가. M2 착수 전 반드시 병합돼 있어야 함.
 - 알림 억제: 이슈는 기존 `sendNotification` 파라미터를 `false`로 호출, 나머지는 위 선행 작업으로 확보한 동일 파라미터 사용 — 별도의 `suppressNotifications` 컨텍스트/스레드로컬을 새로 만들 필요 없음
 - `manifest.counts` 대비 완전성 검증 + 실패/스킵 항목의 명시적 리포트(조용한 스킵 금지)
 - **admin 업로드 API는 청크 업로드(재개 가능)로 설계**(2026-09-29 결정, m2-admin-api-spec.md 3절) — 업로드 세션 생성/청크별 PUT/재개용 상태조회/완료확정 4개 엔드포인트. `UploadSession` 엔티티(uploadId, totalChunks, receivedChunks, fileSize, fileSha256, expiresAt) 신설. 청크는 목적 파일의 해당 오프셋에 `RandomAccessFile`로 바로 써서 별도 조립 단계 없음. 미완료 세션은 48시간 후 정리.
