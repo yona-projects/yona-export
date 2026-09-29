@@ -33,7 +33,11 @@ depends_on: [M1, M2]
 - **유저 아바타(`USER_AVATAR` 컨테이너 첨부) 조회 포함** — **확인 완료(2026-09-29)**: 1.6도 `ResourceType.USER_AVATAR("user_avatar")` + `containerId = user.id.toString()`로 동일한 Attachment 컨테이너 방식(`app/models/enumeration/ResourceType.java:43`, `User.avatarAsResource()`) — 2.0과 완전히 동일한 조회 쿼리로 추출 가능
 - M1 포맷 tar.gz 스트리밍 생성
 - **`import` 서브커맨드(신규, M2 API 클라이언트)**: `yona-extractor import --archive <path> --server <url> --token <admin-token>` 형태로. 세부 API 계약: [m2-admin-api-spec.md](../m2-admin-api-spec.md)
-  - `POST {server}/site/migration/imports`(multipart)로 아카이브 전송(대용량 대비 스트리밍 업로드, 서버 쪽 `.bytes` 금지는 M2 책임) → `jobId` 수신
+  - **청크 업로드(재개 가능, 2026-09-29 결정)**: 아카이브를 로컬 파일 경로+크기+SHA-256으로 식별하는 **로컬 재개 상태 파일**(예: `~/.yona-extractor/uploads/<archive-sha256>.json`, `{uploadId, chunkSize, server}` 저장)을 둔다.
+    - 상태 파일 없음(최초 실행): `fileSha256` 계산 → `POST .../uploads`로 세션 생성 → 응답의 `uploadId`를 상태 파일에 **즉시** 기록(청크 전송 시작 전에 먼저 저장해야, 첫 청크 전송 중 끊겨도 다음 실행이 세션을 재사용할 수 있음)
+    - 상태 파일 있음(재시도/재개): `GET .../uploads/{uploadId}`로 이미 받은 청크 목록 조회 후, 빠진 것만 전송
+    - 청크는 `PUT .../uploads/{uploadId}/chunks/{i}` + `X-Chunk-SHA256` 헤더로 순서 무관하게 전송, 실패한 청크만 백오프 재시도(전체 재시작 아님)
+    - 전부 전송 후 `POST .../uploads/{uploadId}/complete` → `jobId` 수신, 로컬 상태 파일 삭제
   - 인증은 `Yona-Token: <token>` 헤더(옛 yona-export `config.YONA.TO.USER_TOKEN` 관례와 동일, 2.0의 `ApiTokenAuthenticationFilter` 컨벤션 재사용)
   - `GET {server}/site/migration/imports/{jobId}`를 폴링(진행률/결과 조회)
   - 완료 시 M2의 완료 리포트(성공/부분성공/실패 + 항목별 사유)를 CLI 표준출력에 그대로 보여줌, PARTIAL/FAILED면 0이 아닌 종료 코드
@@ -50,6 +54,7 @@ M2 (2.0 Native Importer) — `import` 서브커맨드는 M2의 admin 업로드/�
 - [ ] 생성된 아카이브가 M1 manifest 검증을 통과
 - [ ] `import` 서브커맨드로 M2 admin API에 아카이브 업로드 → 잡 생성 → 폴링 → 완료 리포트 출력까지 왕복 성공
 - [ ] `import` 서브커맨드가 실제로 DB에 아무것도 쓰지 않고 순수 HTTP 호출만 함을 코드 리뷰로 확인
+- [ ] 업로드 도중 CLI 프로세스를 강제 종료하고 재실행하면, 로컬 재개 상태 파일을 읽어 이미 보낸 청크를 재전송하지 않고 이어서 완료함을 검증
 
 ## 미결 질문
 (없음)

@@ -50,7 +50,8 @@ M1 포맷의 아카이브를 업로드받아 비동기로 프로젝트를 생성
 - **선행 작업(M2 착수 전 작은 PR)**: `PostingService.createPosting()`, `CommentService.createIssueComment()`/`createPostingComment()`, **`IssueService.changeState()`** 에 `IssueService.createIssue()`와 동일한 패턴으로 `sendNotification: Boolean = true` 파라미터 추가 — 현재 이 넷은 억제 수단이 없어 무조건 알림을 발행함(design.md 7절 "새로 발견한 갭")
 - 알림 억제: 이슈는 기존 `sendNotification` 파라미터를 `false`로 호출, 나머지는 위 선행 작업으로 확보한 동일 파라미터 사용 — 별도의 `suppressNotifications` 컨텍스트/스레드로컬을 새로 만들 필요 없음
 - `manifest.counts` 대비 완전성 검증 + 실패/스킵 항목의 명시적 리포트(조용한 스킵 금지)
-- admin 업로드 API + 진행률/결과 조회 API — 세부 스펙: [m2-admin-api-spec.md](../m2-admin-api-spec.md)
+- **admin 업로드 API는 청크 업로드(재개 가능)로 설계**(2026-09-29 결정, m2-admin-api-spec.md 3절) — 업로드 세션 생성/청크별 PUT/재개용 상태조회/완료확정 4개 엔드포인트. `UploadSession` 엔티티(uploadId, totalChunks, receivedChunks, fileSize, fileSha256, expiresAt) 신설. 청크는 목적 파일의 해당 오프셋에 `RandomAccessFile`로 바로 써서 별도 조립 단계 없음. 미완료 세션은 48시간 후 정리.
+- 진행률/결과 조회 API — 세부 스펙: [m2-admin-api-spec.md](../m2-admin-api-spec.md)
 - **본문 내 상호참조 보존** (design.md 4절)
   - 타깃 프로젝트가 비어 있는지 사전 검증(비어있지 않으면 import 거부)
   - 이슈/포스트를 원본 `number` 그대로 명시적으로 생성(auto-increment 미사용), import 완료 후 프로젝트의 다음 번호 카운터를 `max+1`로 보정
@@ -88,6 +89,9 @@ M1 (아카이브 포맷)
 - [ ] 같은 카테고리에 라벨이 여러 개인 fixture로 import 후 카테고리가 중복 생성되지 않고 하나로 공유됨을 검증
 - [ ] CLOSED 상태였던 이슈/마일스톤 fixture로 import 후 실제 상태가 CLOSED이고, `createdDate`/`updatedDate`가 여전히 원본 값과 일치함을 검증(changeState 이후 날짜가 덮어써지지 않았는지)
 - [ ] GB급 아카이브 업로드 시 컨트롤러 코드가 `MultipartFile.bytes`를 쓰지 않고 스트리밍으로 처리함을 확인(m2-admin-api-spec.md 0절 — `/site/import`의 기존 안티패턴 재발 방지)
+- [ ] 업로드 도중 일부 청크만 보낸 상태에서 연결을 끊고 재시작 → `GET .../uploads/{uploadId}`가 이미 받은 청크를 정확히 보고하고, 나머지만 이어서 보내 최종 파일이 원본과 바이트 단위로 동일함을 검증
+- [ ] 청크 해시가 조작된 요청을 보내면 해당 청크만 409로 거부되고 다른 청크에는 영향이 없음을 검증
+- [ ] 48시간 초과한 미완료 업로드 세션이 정리됨을 검증
 - [ ] 비관리자 토큰으로 업로드/조회 API 호출 시 403 반환을 검증
 - [ ] 대응하는 M4 `import` 서브커맨드로 업로드→폴링→리포트 출력 전체 왕복이 성공함을 검증(M4 AC와 공유)
 - [ ] import 중 `IssueShareService.changeSharer()`가 호출되지 않음을 코드 리뷰/테스트로 확인(공유 대상에게 알림이 안 감을 직접 검증)
@@ -99,10 +103,10 @@ M1 (아카이브 포맷)
 - [ ] import 후 `Project.projectScope`가 아카이브 값과 일치함을 검증
 
 ## 미결 질문
-- (m2-admin-api-spec.md 6절) 업로드 재개 지원 여부 — M5 벤치마크에서 실제 끊김 빈도 확인 후 결정
-(그 외 전부 아래에서 결정됨)
+(없음)
 
-## 결정됨 (design.md 14절, 2026-09-29)
+## 결정됨 (design.md 14절 및 후속 결정, 2026-09-29)
+- ~~업로드 재개 지원 여부~~ → **지원한다.** 청크 업로드 프로토콜로 끊긴 지점부터 이어서 전송(m2-admin-api-spec.md 3절) — M5까지 미룰 문제가 아니라고 판단해 지금 확정
 - ~~S3 호환 스토리지 자격증명/버킷이 2.0 배포 환경에 이미 있는지~~ → 지금 당장 이슈 아님. M2(import)는 로컬 스트리밍 업로드라 S3와 무관 — M3 착수 시점으로 미룸
 - ~~import 완료/실패를 요청 관리자에게 알릴 채널(이메일/인앱)~~ → **알림 채널 없음.** M4 CLI의 콘솔 출력(폴링 결과)이 유일한 확인 수단
 - ~~`ImportJob` 실패 시 부분 생성된 데이터의 롤백/정리 정책~~ → 자동 롤백 안 함. `FAILED`/`PARTIAL` 상태 + 상세 리포트로 남기고, 운영자가 프로젝트 삭제 후 재시도 또는 아카이브 수정 후 체크포인트 재개 중 선택
