@@ -21,7 +21,7 @@ depends_on: []
 - 버전 호환 규칙: importer가 낮은 `formatVersion`을 읽을 때의 매핑 책임 범위
 
 ## 의존성
-없음 (다른 모든 티켓의 선행 작업)
+없음 — M0(yona 코어 선행 PR)와는 독립적으로 병행 가능한 별개의 선행 작업. M0을 제외한 M2~M6은 전부 이 티켓(아카이브 포맷)에 의존.
 
 ## Acceptance Criteria
 - [x] manifest.json JSON Schema 문서화 — [archive-format-spec.md](../archive-format-spec.md) 2절

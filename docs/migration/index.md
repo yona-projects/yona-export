@@ -11,10 +11,10 @@
 
 | ID | 제목 | 상태 | 위치(repo) | 의존성 |
 |---|---|---|---|---|
-| [M0](tickets/M0-notification-suppression-prereqs.md) | **yona 코어 선행 PR** — 알림 억제 파라미터 4곳 추가 | 미착수 | yona-projects/yona (next) | - |
+| [M0](tickets/M0-notification-suppression-prereqs.md) | **yona 코어 선행 PR** — 알림 억제 파라미터 4곳 추가 | 미착수 | yona-projects/yona (next), `~/yona-convert/yona` | - |
 | [M1](tickets/M1-archive-format.md) | 아카이브 포맷 확정 | 스펙 확정 (fixture 미작성) | yona-export | - |
-| [M2](tickets/M2-native-importer.md) | 2.0 Native Importer | 미착수 (핵심 가정 검증 완료) | yona-projects/yona (next) | M1, **M0** |
-| [M3](tickets/M3-native-exporter.md) | 2.0 Native Exporter | 미착수 | yona (next) | M1 |
+| [M2](tickets/M2-native-importer.md) | 2.0 Native Importer | 미착수 (핵심 가정 검증 완료) | yona-projects/yona (next), `~/yona-convert/yona` | M1, **M0** |
+| [M3](tickets/M3-native-exporter.md) | 2.0 Native Exporter | 미착수 | yona-projects/yona (next), `~/yona-convert/yona` | M1 |
 | [M4](tickets/M4-legacy-extractor.md) | 1.6 Extractor (yona-export 개편, export+import 서브커맨드) | 미착수 (기술 스택 결정 완료: Kotlin/JVM) | yona-export | M1(export), M2(import) |
 | [M5](tickets/M5-validation.md) | 대용량 검증/벤치마크 | 미착수 | yona-export + yona | M2, M3, M4 |
 | [M6](tickets/M6-pull-request.md) | Pull Request 이관 | 스코프+아카이브 포맷+처리 순서 확정, 구현 전 | yona-projects/yona (next) + yona-export | M1, **M2(같은 프로젝트에 대해 실행 완료 필요)** |

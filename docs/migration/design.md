@@ -156,10 +156,12 @@ Yona 본문/댓글 텍스트는 `#N`(이슈·PR 번호), `@loginId`(멘션), 커
 
 ## 5. 구현 순서 제안
 
+0. **yona 코어 선행 PR**(M2 착수 전 반드시 병합) — [M0](tickets/M0-notification-suppression-prereqs.md)
 1. **아카이브 포맷 확정 + 2.0 Native Importer** (핵심, 목표1·2 공용) — [M1](tickets/M1-archive-format.md), [M2](tickets/M2-native-importer.md)
 2. **2.0 Native Exporter** (목표2 완성 + 목표1 importer 검증용 리허설 도구 확보) — [M3](tickets/M3-native-exporter.md)
 3. **1.6 Extractor로 yona-export 축소/개편** (목표1 완성) — [M4](tickets/M4-legacy-extractor.md). `export` 서브커맨드는 M1만 있으면 1번 단계와 병행 착수 가능, `import` 서브커맨드(M2 API 클라이언트)는 M2의 API 계약이 확정된 뒤 구현
 4. 실제 대용량 합성 데이터(수만 이슈, GB급 첨부)로 왕복 벤치마크 — [M5](tickets/M5-validation.md)
+5. **Pull Request 이관** (M2가 같은 프로젝트에 대해 완료된 뒤, 저장소 수동 이관 후) — [M6](tickets/M6-pull-request.md)
 
 ## 6. 열린 질문 (2026-09-29 일괄 점검 — 최신 상태는 14절)
 
@@ -282,17 +284,17 @@ User, Project/ProjectUser, Issue/IssueComment, Posting/PostingComment, Label/Iss
 
 ### M6. Pull Request 이관 (신규 티켓, 별도 분리 권장)
 
-- **번호 보존 불가(as-is)**: `PullRequestService.createPullRequest()`에 `explicitNumber` 파라미터가 없다 — Issue/Posting과 동일한 패턴의 선행 PR(파라미터 추가) 필요.
+- **번호 보존 불가(as-is)**: `PullRequestService.createPullRequest()`에 `explicitNumber` 파라미터가 없다. **정정(14절/M6 티켓)**: M6은 이 메서드 자체를 호출하지 않고 raw entity로 `number`를 직접 설정하기로 했으므로, 이 파라미터 추가는 실제로 불필요 — yona 코어 선행 PR(M0) 대상 아님.
 - **번호 시퀀스가 이슈와 별개**: `(to_project_id, number)` UNIQUE — 이슈 `#N`과 PR `#N`이 같은 프로젝트에 동시에 존재 가능. **확인 완료(14절)**: `AutoLinkRenderer`는 PR을 아예 지원하지 않고 `#N`은 항상 이슈만 가리키므로, 두 시퀀스가 겹쳐도 텍스트 해석 충돌은 없다.
 - **⚠️ `createPullRequest()`가 `processMergeCheck()`를 호출해 실제 JGit 병합/diff 계산을 수행** — PR 생성 시점에 실제 git 저장소가 이미 올바르게 존재해야 한다. 즉 **PR 이관은 M2(DB 이관)와 같은 타이밍에 자동 실행할 수 없고, 사람이 저장소를 수동으로 다 옮긴 뒤에 별도로 실행**해야 한다. M1/M2가 "저장소 없이도 완결"되게 설계한 것과 근본적으로 다른 제약.
-- `created`/`updated`도 동일하게 `Instant.now()` 하드코딩 — 같은 2차 보정 필요.
+- `created`/`updated`도 `createPullRequest()`를 정상 호출하면 동일하게 `Instant.now()` 하드코딩된다. **정정(M6 티켓)**: 아래 raw 저장 방식을 채택하면서 이 문제 자체가 발생하지 않게 됨 — 2차 보정 불필요.
 - **확인 완료(14절)**: `processMergeCheck()`를 스킵하는 내장 메커니즘은 없다 — 대량의 이미 종결된 과거 PR은 `createPullRequest()`를 쓰지 말고 `PullRequest` 엔티티를 직접 구성해 repository로 저장하는 방식을 채택(비용/정확성 문제 해소).
 
 ## 9. `Issue` 엔티티 전체 필드 감사 (upstream 실제 코드 확인)
 
 User/Project/Posting은 전수 확인했는데 Issue는 안 했었다 — 확인해보니 세 가지가 더 나왔다.
 
-- **⭐ `parent: Issue?` — 서브태스크 계층, 실제로 쓰이는 기능**: Posting의 `parent`(미사용 확인됨)와 달리 이건 `IssueViewController.kt`에서 실제로 대입되는 곳이 있다(서브태스크 지정 UI). `issues.ndjson`에 `parentLegacyId` 추가 필요. **주문 문제**: `createIssue()`엔 parent 파라미터가 없어 구성한 엔티티에 직접 세팅해야 하는데, 부모 이슈가 먼저 생성되어 있어야 한다 — 댓글 부모-자식처럼 "legacyId 오름차순 = 부모 먼저"를 전제할 수도 있지만, 더 안전하게는 **1차로 이슈를 전부 생성한 뒤, 2차로 `parentLegacyId`가 있는 이슈만 순회하며 부모를 연결**하는 2-pass 방식을 권장.
+- **⭐ `parent: Issue?` — 서브태스크 계층, 실제로 쓰이는 기능**: Posting의 `parent`(미사용 확인됨)와 달리 이건 `IssueViewController.kt`에서 실제로 대입되는 곳이 있다(서브태스크 지정 UI). `issues.ndjson`에 `parentLegacyId` 추가 필요. `createIssue()`엔 parent 파라미터가 없어 구성한 엔티티에 직접 세팅해야 한다. **2-pass 필수(단순 권장 아님, 13절에서 확정 검증)**: `updateIssue()` 경로에서 이슈는 생성 후에도 임의의 기존 이슈로 언제든 재부모화될 수 있음을 코드로 확인 — 댓글과 달리 "legacyId 오름차순 = 부모 먼저"라는 전제가 성립하지 않는다. 반드시 1차로 이슈를 전부 생성한 뒤 2차로 부모를 연결해야 한다(design.md 3-2-a "5b" 단계).
 - **⚠️ `history` 필드가 `createIssue()` 내부에서 무조건 `""`로 초기화됨**(`issue.history = ""`, line 180) — `createdDate`와 같은 패턴. **단, `createPosting()`은 `history`를 전혀 건드리지 않는다**(코드로 확인, `updatePosting()`에서만 사용) — 즉 Posting은 생성 전 엔티티에 `history`를 세팅해두면 그대로 저장되지만, **Issue만 생성 후 2차 보정이 필요**하다(createdDate 보정과 같은 타이밍에 같이 처리하면 됨).
 - **`voters`(Issue·IssueComment 둘 다)와 `weight`는 사실 한 쌍**: `voteIssue()`/`unvoteIssue()`를 보면 `weight`는 독립 필드가 아니라 `voters.size()`를 반영하는 **비정규화 캐시**다(`issue.weight = issue.weight + 1`을 `voters.add()`와 항상 같이 호출). 아카이브에 `weight`를 별도로 담지 말고 `voters`(loginId 목록)만 담아, import 시 `weight = voters.size`로 M2가 직접 계산해서 넣는다(드리프트 방지).
 - **`sharers: MutableSet<IssueSharer>`** — 이슈 단위로 비멤버 외부 유저에게 공유 권한을 주는 기능(`IssueSharer(loginId, user, issue, created)`). 이전에 "확인 필요"로 남겨뒀던 `IssueSharer`가 실제로 쓰이는 기능임을 확인 — `issues.ndjson`에 `sharers`(loginId 목록) 추가 필요.
