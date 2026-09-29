@@ -5,6 +5,7 @@
 ## 문서
 - [design.md](design.md) — 전체 설계 (아카이브 포맷, 컴포넌트, 아키텍처)
 - [archive-format-spec.md](archive-format-spec.md) — M1 세부 스펙 (manifest.json, 엔티티별 NDJSON 스키마)
+- [m2-admin-api-spec.md](m2-admin-api-spec.md) — M2 세부 스펙 (Admin Import API: 업로드/상태조회 엔드포인트, 인증, M4 연동)
 
 ## 작업 단위 (프로젝트 단위 진행)
 
@@ -13,7 +14,7 @@
 | [M1](tickets/M1-archive-format.md) | 아카이브 포맷 확정 | 스펙 확정 (fixture 미작성) | yona-export | - |
 | [M2](tickets/M2-native-importer.md) | 2.0 Native Importer | 미착수 (핵심 가정 검증 완료) | yona-projects/yona (next) | M1 |
 | [M3](tickets/M3-native-exporter.md) | 2.0 Native Exporter | 미착수 | yona (next) | M1 |
-| [M4](tickets/M4-legacy-extractor.md) | 1.6 Extractor (yona-export 개편) | 미착수 | yona-export | M1 |
+| [M4](tickets/M4-legacy-extractor.md) | 1.6 Extractor (yona-export 개편, export+import 서브커맨드) | 미착수 (기술 스택 결정 완료: Kotlin/JVM) | yona-export | M1(export), M2(import) |
 | [M5](tickets/M5-validation.md) | 대용량 검증/벤치마크 | 미착수 | yona-export + yona | M2, M3, M4 |
 | [M6](tickets/M6-pull-request.md) | Pull Request 이관 | 스코프 포함 확정, 세부 설계 전 | yona-projects/yona (next) + yona-export | M1, M2 |
 

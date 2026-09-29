@@ -18,7 +18,7 @@
 | 목표2 | yona 2.0 → yona 2.0 (같은 엔진 재사용) |
 | 압축 | 산출되는 모든 아카이브는 **반드시 압축** |
 | 단위 | export/import는 항상 **프로젝트 단위**로 수행 (사이트 전체 일괄 이관 아님, 회사/프로젝트별로 개별 일정으로 진행 가능) |
-| 전제 | 타깃 project의 owner(유저 또는 조직)는 import 시작 전 2.0에 **이미 존재**해야 함 — owner/조직 계정 생성은 이 도구의 책임이 아님(운영자가 미리 만들어둔다는 전제) |
+| 전제 | 타깃 project의 owner(유저 또는 조직)와 **project 자체(빈 상태, 올바른 vcs 타입)**는 import 시작 전 2.0에 **이미 존재**해야 함 — 운영자가 2.0의 정상적인 "새 프로젝트 만들기"로 미리 생성(12절). M2는 project를 생성하지 않음 |
 
 > ⚠️ **확인 필요**: 로컬 `~/yona` 저장소의 `next` 브랜치는 `upstream/next`(yona-projects/yona 실제 2.0, Kotlin/Spring)와 234 ahead / 294 behind로 분기되어 있고, 현재 내용은 Kotlin이 아닌 Java(Play, JPA) 코드입니다. M2/M3(2.0 쪽 구현) 착수 전 어느 브랜치를 기준으로 작업할지 먼저 정리해야 합니다.
 
@@ -79,6 +79,7 @@
 
 ### 3-1. 1.6 Extractor (yona-export 저장소 업그레이드, 추출 전용으로 범위 축소)
 
+- **기술 스택(2026-09-29 결정, M4 티켓 참고)**: Node.js를 폐기하고 **Kotlin/JVM**으로 전면 재작성 — M2(2.0)와 같은 언어를 씀으로써 아카이브 포맷(날짜/enum/null 처리 등)의 크로스랭귀지 드리프트 리스크를 구조적으로 제거. Spring 없이 Clikt 기반 가벼운 CLI + MariaDB JDBC + `kotlinx-serialization-json` + `commons-compress`. 저장소 이름/위치(`yona-export`)는 유지, 내부만 Gradle 프로젝트로 교체.
 - **입력**: 1.6 DB(운영 primary 아님 — **replica 또는 스냅샷 복원본**)에 read-only 접속, `yona_data` 첨부파일 디렉터리 직접 읽기
 - 지금의 REST 기반 `unirest` 호출을 전부 제거 — 1.6 앱을 살아있게 유지하거나 API를 새로 만들 필요 자체가 없어짐(빌드 불가 제약과 정확히 맞음)
 - 엔티티별 **키셋 페이징 SQL**(`WHERE id > ? ORDER BY id LIMIT N`)로 순회하며 NDJSON에 바로 스트리밍 기록
@@ -100,15 +101,16 @@
 - **알림 억제**: import 잡 컨텍스트에 `suppressNotifications=true` 플래그를 태워, 알림 발송 서비스가 이 플래그를 보면 실제 발송을 건너뛰되 감사 로그에는 "발송되었을 알림"을 기록(추적 가능하게)
 - **완전성 검증**: 처리 끝나면 `manifest.counts`와 실제 생성된 레코드 수를 비교. 불일치·실패 항목은 **조용히 스킵하지 않고** `resultReport`에 항목별로 남김(예: 부모가 없는 중첩 답글은 스킵이 아니라 최상위로 승격해서 보존 + 리포트에 "원래 부모 id" 기록)
 - **결과**: import 완료 리포트(성공/부분성공/실패 + 항목별 사유)를 admin이 조회 가능하게
+- **API 세부 스펙**: 업로드/상태조회 엔드포인트, 인증 헤더, 응답 스키마는 [m2-admin-api-spec.md](m2-admin-api-spec.md) 참고 — 기존 `/site/import`(`SiteApiController`)의 `MultipartFile.bytes` 전체 메모리 적재 안티패턴을 재사용하지 않도록 명시
 
 #### 3-2-a. 단계별 순서와 id 매핑
 
 | 순서 | 단계 | 참조하는 것 | 참조 방식 | 다음 단계로 넘기는 매핑 |
 |---|---|---|---|---|
 | 0 | 사전검증 | 타깃 project owner(유저/조직) | 2.0에 **이미 존재해야 함** — owner/조직 생성은 이 도구 책임 아님 | - |
-| 0 | 사전검증 | 타깃 project | 비어 있어야 함(4절) | - |
+| 0 | 사전검증 | 타깃 project | **미리 존재**해야 함(운영자가 2.0에서 직접 생성 — 12절), 내용은 비어 있어야 함(4절), `vcs`가 아카이브의 `projectVcs`와 일치해야 함 | - |
 | 1 | users(+credentials) | - | loginId 충돌 시 명시적 해결 | `legacyLoginId → finalLoginId` |
-| 2 | project | owner, members | members는 최종 loginId로 바로 연결(숫자 id 매핑 불필요) | - |
+| 2 | project | 기존 project 조회(생성 아님, 12절) + `updateProject()`로 설정 필드 반영, members 추가 | members는 최종 loginId로 바로 연결(숫자 id 매핑 불필요) | - |
 | 3 | labels | project | project에 귀속 | (이름+category로 참조, id 매핑 불필요) |
 | 4 | milestones | project | project에 귀속 | `legacyMilestoneId → newMilestoneId` |
 | 5 | issues | project, author/assignees(loginId), labels(이름), milestone | milestone은 4의 매핑으로 조회 | `legacyIssueId → newIssueId` |
@@ -152,18 +154,20 @@ Yona 본문/댓글 텍스트는 `#N`(이슈·PR 번호), `@loginId`(멘션), 커
 
 1. **아카이브 포맷 확정 + 2.0 Native Importer** (핵심, 목표1·2 공용) — [M1](tickets/M1-archive-format.md), [M2](tickets/M2-native-importer.md)
 2. **2.0 Native Exporter** (목표2 완성 + 목표1 importer 검증용 리허설 도구 확보) — [M3](tickets/M3-native-exporter.md)
-3. **1.6 Extractor로 yona-export 축소/개편** (목표1 완성) — [M4](tickets/M4-legacy-extractor.md)
+3. **1.6 Extractor로 yona-export 축소/개편** (목표1 완성) — [M4](tickets/M4-legacy-extractor.md). `export` 서브커맨드는 M1만 있으면 1번 단계와 병행 착수 가능, `import` 서브커맨드(M2 API 클라이언트)는 M2의 API 계약이 확정된 뒤 구현
 4. 실제 대용량 합성 데이터(수만 이슈, GB급 첨부)로 왕복 벤치마크 — [M5](tickets/M5-validation.md)
 
-## 6. 열린 질문 (결정 필요)
+## 6. 열린 질문 (2026-09-29 일괄 점검 — 최신 상태는 14절)
 
-- S3 호환 스토리지 자격증명/버킷을 2.0 배포 환경에 이미 갖고 있는지, 아니면 이번에 새로 붙여야 하는지
-- import 완료/실패를 요청 관리자에게 알릴 때 이메일/인앱 중 무엇을 쓸지 (워처 알림과는 별개로 허용되는 채널인지)
-- 1.6 DB replica/스냅샷을 실제로 뜰 수 있는 운영 환경인지(스냅샷 복원 프로세스가 이미 있는지)
-- 로컬 `~/yona` `next` 브랜치와 upstream `next`(실제 2.0 Kotlin) 간 분기를 어떻게 정리하고 M2/M3 작업 브랜치를 잡을지
-- 번호가 이미 채워진(비어있지 않은) 프로젝트로 이관해야 하는 경우가 실제로 있는지 — 있다면 `#N` 보존 전략이 아니라 본문 치환 전략이 별도로 필요
-- 유저의 추가 등록 이메일(`emails`)을 `users.ndjson`에 포함시킬지 — 완전성 요구사항상 필요할 수 있으나 영향도가 낮아 M1 범위에 넣을지 판단 필요
-- 1.6에 `UserState`에 대응하는 상태값이 정확히 몇 가지이고 2.0 `UserState`(ACTIVE/LOCKED/DELETED/GUEST/SITE_ADMIN)와 어떻게 매핑되는지 — M4에서 1.6 `User.java` 확인 필요
+이 절에 나열했던 질문들을 14절에서 전부 재점검했다. 코드로 확인되어 해결된 것, 지금 엔지니어링 판단으로 결정한 것, 여전히 조직/운영 결정이 필요해서 열려 있는 것으로 분류했다 — **최신 상태는 항상 14절을 기준으로 본다.** 이 절은 최초 작성 시점의 스냅샷으로만 남겨둔다.
+
+- ~~S3 호환 스토리지 자격증명/버킷~~ → 14절: 여전히 열림(인프라 확인 필요)
+- ~~import 완료/실패 알림 채널~~ → 14절: 여전히 열림(제품 결정 필요)
+- ~~1.6 DB replica/스냅샷 접근 경로~~ → 14절: 여전히 열림(운영팀 협의 필요)
+- ~~로컬 `~/yona` `next` 브랜치 분기 정리~~ → 14절: 여전히 열림(개인 작업 방침 결정 필요)
+- ~~번호가 이미 채워진 프로젝트로 이관~~ → 14절: **해결(닫음)**, 12절 워크플로우상 발생 안 함
+- ~~유저의 추가 등록 이메일(`emails`)~~ → 14절: **해결**, 포함하기로 결정
+- ~~1.6 `UserState` 매핑~~ → 14절: **해결**, 2.0과 완전히 동일함을 확인
 
 ## 7. 검증된 사실 (upstream `next` 실제 코드 확인, 2026-09-28)
 
@@ -297,3 +301,91 @@ User/Project/Posting은 전수 확인했는데 Issue는 안 했었다 — 확인
 - **`IssueEvent`도 2.0에 1:1로 존재**: `id/issue/senderLoginId/senderEmail/oldValue/newValue/created/eventType` — 1.6 필드와 정확히 대응. `created`도 여기 그대로 세팅 가능한 생성자 파라미터라 별도 2차 보정 불필요(다른 곳처럼 서비스가 강제로 now()를 박는 구조가 아님, 단순 엔티티라 직접 repository.save()).
 - **`IssueComment`/`PostingComment` 전체 필드 재확인**: `history` 필드는 둘 다 없음(기존 판단 유지). **새 발견**: `IssueComment`에만 `voters: MutableSet<User>`가 있다(`issue_comment_voter` 조인 테이블) — 이슈 댓글은 투표 가능, 게시글 댓글은 불가능. `issues.ndjson` 댓글 항목에 `voters` 필드 추가.
 - **`Assignee(id, user, project)`**: project 스코프의 "담당 가능 후보" 풀 엔티티(이슈에 직접 달리는 게 아니라, project.json의 `assignees` 목록과 1:1 대응) — 기존 설계와 정확히 일치, 새로운 이슈 없음.
+
+## 11. 알림 재점검 — 라벨/투표/공유/프로젝트 생성 (선생님 재확인 요청)
+
+"import 중엔 알림이 절대 가면 안 된다"는 요구를 다시 강조받아, 지금까지 명시적으로 안 짚었던 나머지 쓰기 경로를 전부 재확인했다.
+
+- **라벨(`newLabelByCategoryName`)·투표(`voteIssue`/`unvoteIssue`)**: 코드에 알림 관련 호출이 전혀 없음 확인 — 안전. 투표는 어차피 M2가 `voters`를 엔티티에 직접 세팅하는 방식(9절)이라 이 서비스 메서드 자체를 호출하지 않으므로 이중으로 안전.
+- **⚠️ `sharers` — `IssueShareService.changeSharer()`는 실제로 알림을 보낸다**: `add`/`delete` 액션마다 무조건 `sendNotification()`을 호출한다(억제 파라미터 없음). 다행히 실제 저장 로직(`addSharerInternal()`)은 private 헬퍼로 `IssueSharer(...)` 생성 + `issueSharerRepository.save()`뿐이라, **M2는 `changeSharer()`를 호출하지 말고 `IssueSharer` 엔티티를 직접 구성해 repository로 저장**해야 한다(다른 곳과 동일한 "비즈니스 메서드 우회, raw 저장" 패턴).
+- **⚠️ `ProjectService.createProject()`에서 알림과 무관한 버그 두 개를 추가로 발견**:
+  1. `project.siteurl = "http://localhost:9000/${project.name}"` — 파라미터로 뭘 넘기든 **무조건 이 값으로 덮어씀**. 어제 추가한 `project.json`의 `siteurl` 필드가 생성 시점에 그대로 날아간다 — `createdDate`/`history`와 같은 2차 보정 대상 목록에 `Project.siteurl`도 추가해야 한다.
+  2. `project.createdDate = Instant.now()`도 동일하게 하드코딩 — Project도 2차 날짜 보정 대상에 포함.
+  3. `repositoryService.getRepository(savedProject).create()`가 `createProject()` 안에서 호출되어 **실제 빈 git/svn bare 저장소를 생성하는 부작용**이 있다. 즉 M2가 project를 생성하는 순간 그 경로에 빈 저장소가 이미 생긴다 — 저장소 수동 이관을 맡을 운영자에게 "새로 만들지 말고 이 경로에 이미 있는 빈 저장소에 push/복원하라"고 안내해야 한다(M6/운영 절차에 반영 필요).
+  4. `createProject(project, creator)`는 `creator` 한 명만 MANAGER로 등록한다 — project.json의 나머지 멤버는 별도로 `ProjectUser(project, user, role)`를 직접 구성해 `projectUserRepository.save()`로 추가해야 한다(전용 "멤버 추가" 서비스 메서드가 없음, 확인된 다른 `ProjectUser` 생성 지점들도 전부 raw 저장 방식이라 알림 위험 없음).
+
+## 12. 아키텍처 변경 — M2는 project를 생성하지 않는다 (2026-09-29 결정)
+
+11절 4번(빈 저장소 부작용)을 해결하는 방법으로 두 가지를 검토했다: (1) 저장소 자체도 아카이브에 포함해서 이관, (2) 저장소 이관은 계속 사람이 하되 프로젝트 생성 시점 자체를 조정. **(2)를 선택**했다 — (1)은 이슈 #828의 발단이었던 "GB급 저장소" 문제를 같은 파이프라인에 재도입하는 것이라 범위가 급격히 커지고, git/svn/hg 세 가지 백업/복원을 각각 새로 구현해야 한다.
+
+### 결정 내용
+
+**M2는 `ProjectService.createProject()`를 아예 호출하지 않는다.** 대신:
+
+- 기존 전제 "owner는 미리 존재해야 함"(0절)을 **"project 자체(빈 상태, 올바른 vcs 타입)도 미리 존재해야 함"으로 확장**한다.
+- 운영 절차: **① 운영자가 2.0에서 평범하게 "새 프로젝트 만들기"로 프로젝트를 생성**(이 정상적인 흐름 안에서 `createProject()`가 호출되어 올바른 타입의 빈 저장소가 자동으로 생기고 `siteurl`도 이 인스턴스 기준으로 정상 세팅됨 — "부작용"이 아니라 "원래 그런 동작") **→ ② 그 빈 저장소에 1.6 저장소를 수동으로 push/복원 → ③ M2로 DB 데이터(유저/이슈/게시글/라벨/마일스톤/첨부 등)만 import.**
+- 이 순서는 M6(PR 이관)이 요구하던 "PR 생성 시점에 저장소가 이미 있어야 함" 전제도 자동으로 만족시킨다 — 운영 절차가 **프로젝트 껍데기 생성(수동) → 저장소 push(수동) → M2 DB import(자동) → M6 PR import(자동)** 하나로 통일된다.
+- 11절 1·2·3번(siteurl/createdDate 하드코딩, 빈 저장소 부작용)은 **M2가 project를 안 건드리니 전부 해소**된다. `siteurl`은 오히려 아카이브 값으로 덮어쓰면 안 된다 — 새 인스턴스의 실제 URL이 맞는 값이므로, 굳이 옛 값을 이관할 이유가 없다(project.json `siteurl` 필드 자체를 참고용으로만 남기고 import 시 무시).
+- **`updateProject(projectId, UpdateProjectParam)` 확인 완료**: `isCodeAccessibleMemberOnly`/`isUsingReviewerCount`/`defaultReviewerCount`/`isXEnabled` 7종 전부 `param.xxx != null`일 때만 반영하는 부분 업데이트라 정확히 필요한 용도에 맞는다. 이름 변경(`param.name`) 분기 이외엔 알림·저장소 부작용 전혀 없음(코드 확인). M2는 project 조회 후 이 메서드로 설정 필드만 반영한다.
+- **새 사전검증**: 아카이브의 `projectVcs`가 미리 만들어둔 프로젝트의 실제 `vcs`와 일치하는지 확인 — 불일치 시 즉시 실패(다른 타입의 저장소를 잘못 이관하는 사고 방지).
+- 멤버 추가(creator 외 나머지)는 11절 4번 그대로 — `ProjectUser` 직접 구성 + repository 저장.
+
+### API 전송 프로토콜: HTTP/2 vs gRPC (같은 날 논의)
+
+m2-admin-api-spec.md의 업로드/폴링 API는 **평범한 REST/HTTP로 유지**하고 gRPC는 채택하지 않는다.
+- 이 기능은 관리자가 가끔 실행하는 저빈도 작업이라, gRPC가 강점을 갖는 "고빈도 폴리글랏 마이크로서비스 RPC" 상황이 아니다.
+- gRPC는 메시지당 기본 4MB 제한이 있어 GB급 아카이브 전송에 오히려 수동 청킹이 필요 — HTTP multipart/청크 전송이 이미 이 문제를 프로토콜 레벨에서 해결해준다.
+- 2.0은 이미 Spring MVC REST 스택(`SiteApiController` 등)이라, 이 기능 하나 때문에 별도 포트의 gRPC 서버를 새로 띄우는 건 비용 대비 이득이 없다.
+- HTTP/2 자체는 애플리케이션 코드가 결정할 문제가 아니라 배포 인프라(TLS 종료 리버스 프록시) 문제에 가깝다 — 서버가 지원하면 Java 11+ `HttpClient`가 자동 협상한다. M4 CLI는 이 클라이언트를 사용.
+- 업로드 안정성(대용량 전송 중 끊김)은 프로토콜 선택이 아니라 **재개 가능한 업로드**(tus 프로토콜, 청크+재시도 등)의 문제 — m2-admin-api-spec.md 6절 열린 질문으로 유지, M5 벤치마크에서 실제 필요성이 확인되면 그때 설계.
+
+## 13. Export/Import 정합성 최종 점검 ("완전히 맞물렸는가" 재확인)
+
+M1(아카이브가 담는 필드) ↔ M2(그 필드로 실제로 하는 일)를 끝까지 대조해봤다 — 12절 아키텍처 변경(M2가 project를 안 만듦) 이후 project.json의 일부 필드가 "누가 쓰는지" 불분명해진 채 방치돼 있었다.
+
+- **⚠️ 진짜 버그 발견 — 이슈 담당자는 단수인데 배열로 잘못 적어뒀었다**: `Issue.assignee: Assignee?`(2.0)도 `Issue.assignee`(1.6 `app/models/Issue.java`)도 **이슈당 담당자 1명**만 지원한다. `issues.ndjson`에 `"assignees": [...]`(배열)로 적어둔 건 오기 — `assigneeLoginId`(단수, nullable) 하나로 정정했다(archive-format-spec.md 3-6절). `createIssue(assigneeUser: User?)`가 이미 단수 파라미터라 M2 구현 자체는 원래 계획대로면 되고, **아카이브 필드 이름/형태만 틀려 있었다.**
+- **`project.json`의 `assignees`/`authors`는 파생값(derived), M2가 쓸 일이 없다**: `ProjectApiController.findAuthors()`가 이슈/게시글을 스캔해서 그때그때 계산하는 값이고, `Assignee` 엔티티 자체도 project 레벨 "후보 풀"이 아니라 `createIssue()`/`changeAssignee()` 안에서 이슈 배정마다 그때그때 새로 생성된다(project 공용으로 미리 만들어두는 게 아님). 그래서 M2가 project 단계에서 이 두 필드로 뭘 할 필요가 없다 — issues/posts를 올바른 `authorLoginId`/`assigneeLoginId`로 만들면 자연히 재구성된다. M2 티켓에 "안 쓴다"는 게 빠져 있어서 마치 누락처럼 보였을 뿐, 실제로는 할 일이 없는 게 맞다.
+- **`projectScope`가 project 업데이트 호출 목록에서 빠져 있었다**: `updateProject()`의 `param.projectScope`는 null-가드가 있어(다른 설정 필드들과 동일 패턴) 안전하게 반영 가능한데, M2 범위에 명시가 안 돼 있었다 — 추가.
+- **⚠️ `project.overview`는 null-가드가 없다**: `updateProject()` 안에서 `project.overview = param.overview`가 조건 없이 실행된다(다른 필드들과 다름). M2가 `overview`를 안 건드리려고 `null`을 넘기면 **설명이 지워진다.** 항상 아카이브의 `projectDescription` 값을 명시적으로 채워 넘겨야 한다.
+- **`Project.createdDate`는 이번 아키텍처 변경으로 "이관 대상에서 자연히 제외"됐다**: `updateProject()`가 이 필드를 아예 안 건드리고, M2도 더 이상 `createProject()`를 호출하지 않으므로 손댈 지점이 없다. 프로젝트 껍데기는 운영자가 오늘 만드는 새 레코드이므로, **1.6의 원래 생성일을 억지로 이식하지 않고 2.0에서 실제로 만들어진 날짜를 그대로 두는 걸 의도된 트레이드오프로 채택**한다(별도 보정 안 함).
+
+### 결론
+M1 필드 중 실제로 쓰이지 않는 게 있다는 걸 명확히 하고(파생값 2개), 진짜 빠졌던 것(단수/배열 오기, projectScope, overview 널가드)을 채워 넣은 지금 시점에서 M1↔M2는 필드 단위로 맞물렸다고 볼 수 있다. 다만 이건 "설계 문서 레벨"의 정합성이고, 실제 구현 코드가 나온 뒤엔 M5(대용량 검증)에서 왕복 테스트로 다시 한번 실증해야 한다.
+
+## 14. 미결 질문 일괄 점검 (2026-09-29)
+
+여러 티켓에 흩어진 "미결 질문"/"열린 질문"을 모아 코드로 검증 가능한 건 검증하고, 엔지니어링 판단으로 지금 정할 수 있는 건 정했다. 조직/운영 차원의 결정이 필요한 것만 진짜로 열어둔다.
+
+### ✅ 코드로 확인되어 해결됨
+
+| 질문 | 출처 | 결론 |
+|---|---|---|
+| `AutoLinkRenderer`가 `#N`을 이슈/PR 중 어떻게 구분해 해석하는지 | M6 | **PR을 아예 지원 안 함** — `toValidIssueLink()`가 `issueRepository`만 조회하고 `pullRequestRepository` 참조가 코드 어디에도 없다. `#N`은 항상 이슈만 가리킨다. 즉 "이슈 #N과 PR #N이 같은 프로젝트에 공존"해도 본문 텍스트에서 헷갈릴 위험 자체가 없다 — M6의 우려가 기우였음이 확인됨. |
+| 종결된 PR의 `processMergeCheck()` 스킵 가능 여부 | M6 | **스킵 메커니즘 없음**(코드 확인) — `createPullRequest()`는 항상 `processMergeCheck()`를 무조건 호출한다. **권장**: M6은 `createPullRequest()`를 쓰지 말고, `PullRequest` 엔티티를 직접 구성해 `pullRequestRepository.save()`로 저장(다른 곳과 동일한 "비즈니스 메서드 우회, raw 저장" 패턴) — 대량의 이미 종결된 과거 PR에 실제 JGit 병합 재계산을 매번 돌릴 필요가 없다. |
+| PR 리뷰 코멘트(`ReviewComment`/`CommentThread`)를 어디까지 포함할지 | M6 | **결정(2026-09-29)**: 포함한다. `CommentThread`가 `commitId`/`prevCommitId`로 특정 커밋에 구조적으로 고정되므로, 저장소 이관은 이미 결정된 대로 사람이 직접 하되(0절) **커밋 해시를 보존하는 방식(`git clone --mirror` 등)으로 하라는 요건을 운영 절차 문서에 명시**한다 — 이건 "우리가 못 정하는 질문"이 아니라 "운영자에게 요구할 조건"이었을 뿐. |
+| 1.6 `UserState`가 정확히 몇 가지이고 2.0과 어떻게 매핑되는지 | 6절 | `../yona`(v1.6) `models/enumeration/UserState.java` 확인 — **2.0과 완전히 동일**: `ACTIVE, LOCKED, DELETED, GUEST, SITE_ADMIN`. 매핑 로직 불필요, 값 그대로 대응(SITE_ADMIN→ACTIVE 강등 규칙만 예외 적용). |
+| 1.6에 2FA 개념이 정말 없는지 | 7절(가정) | `app/models`/`app/controllers`에 TwoFactor/TOTP/WebAuthn 관련 코드 전무 확인 — 가정 확정, 별도 처리 불필요. |
+
+### ✅ 엔지니어링 판단으로 지금 결정
+
+| 질문 | 출처 | 결정 |
+|---|---|---|
+| 유저의 추가 등록 이메일(`emails`)을 `users.ndjson`에 포함할지 | 6절 | **포함한다** — `loginDefaultPage` 때와 같은 논리(완전성 원칙, 비용 낮음). `users.ndjson`에 `additionalEmails: string[]` 필드 추가(M1 후속 작업). |
+| `ImportJob` 실패 시 부분 생성된 데이터의 롤백/정리 정책 | M2 | **자동 롤백 안 함.** 상태를 `FAILED`/`PARTIAL`로 남기고 상세 리포트 제공 — 운영자가 (a) 프로젝트를 지우고 재시도하거나 (b) 아카이브를 고쳐 체크포인트부터 재개할지 직접 선택. 자동 롤백은 "부분 성공"이라는 유용한 정보(어디까지 됐는지)를 지워버려서 채택 안 함. |
+| 업로드 임시 파일 보존/삭제 정책 | m2-admin-api-spec.md | **성공 시 즉시 삭제, 실패/PARTIAL 시 7일 보관 후 정리**(감사 목적) — 정확한 보관 기간은 배포 시 설정값으로 뺀다. |
+| `report.failures`가 많을 때 페이로드 크기 | m2-admin-api-spec.md | **응답에 최대 500건까지 inline, 초과분은 "N건 더 있음" 표시만** — 그 이상 상세가 필요한 경우는 1차 범위 밖(필요성이 실제로 확인되면 별도 페이지네이션 엔드포인트 추가). |
+| 번호가 이미 채워진(비어있지 않은) 프로젝트로 이관해야 하는 경우 | 6절 | **현재 워크플로우에서는 발생하지 않음 — 닫음.** 12절 결정으로 타깃 프로젝트는 항상 운영자가 이관 전용으로 새로 만드는 빈 프로젝트라, 번호 충돌 시나리오 자체가 안 생긴다. 향후 "같은 프로젝트에 반복/증분 이관"이 실제 요구로 나오면 그때 재검토. |
+
+### ✅ 추가로 결정됨 (2026-09-29, 선생님 확인)
+
+| 질문 | 결정 |
+|---|---|
+| import 완료/실패를 요청 관리자에게 알릴 채널(이메일/인앱) | **알림 채널 없음.** M4 CLI의 콘솔 출력(폴링 결과 stdout 출력)이 유일한 확인 수단 — m2-admin-api-spec.md 5절 흐름 그대로, 별도 이메일/인앱 발송 기능은 만들지 않는다. |
+| S3 호환 스토리지 자격증명/버킷 준비 여부 | **지금 당장의 이슈 아님 — M3(2.0 Native Exporter) 착수 시점으로 미룸.** M2(import)는 이미 로컬 스트리밍 업로드로 설계돼 있어 S3와 무관하다(m2-admin-api-spec.md 0-a절). S3는 M3의 "나중에 다운로드" 기능에만 필요하므로, M3 세부 설계 시 재논의. |
+| 1.6 DB의 read-only replica/스냅샷 접근 경로 확보 | **이 설계 문서의 관심사 밖으로 확정.** M4 구현 시점에 운영진이 알아서 처리할 순수 운영 이슈 — 더 이상 열린 질문으로 추적하지 않는다. |
+
+### ⏳ 여전히 조직/운영 차원의 결정이 필요함 (코드로 못 닫음)
+
+| 질문 | 출처 | 필요한 것 |
+|---|---|---|
+| 로컬 `~/yona`의 `next` 브랜치(upstream과 234 ahead/294 behind로 분기)를 어떻게 정리할지 | 6절 | 선생님의 개인 작업 방침 결정 — 이 234개 커밋을 rebase/보존/폐기할지는 이 세션에서 판단할 수 없음 |

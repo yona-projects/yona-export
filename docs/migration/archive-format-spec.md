@@ -88,21 +88,22 @@
   "isBoardEnabled": true,
   // isWikiEnabled는 담지 않음 — 1.6엔 대응 값이 없는 2.0 신규 필드, import 시 기본값(true) 사용
   "members": [{ "loginId": "doortts", "role": "manager" }],  // role: manager | member
-  "assignees": ["doortts"],   // loginId 목록, users.ndjson과 매칭
-  "authors": ["doortts"]
+  "assignees": ["doortts"],   // 참고용(derived) — project 내 어떤 이슈에든 담당자로 지정된 적 있는 유저 목록. 2.0에도 저장 API가 없는 파생값이라 M2가 import 시 별도로 쓰지 않음(design.md 13절)
+  "authors": ["doortts"]      // 참고용(derived) — 이슈/게시글 작성자 집합. 마찬가지로 M2가 직접 쓰지 않음, issues/posts를 만들면 자연히 재구성됨
 }
 ```
 - `siteurl`/`isCodeAccessibleMemberOnly`/`isUsingReviewerCount`/`defaultReviewerCount`/`isXEnabled` 6종은 2.0 `Project.kt`에 1:1 대응 필드 확인됨(design.md 8절). `isXEnabled` 6개는 1.6 `ProjectMenuSetting.code/issue/pullRequest/review/milestone/board`에서 그대로 가져온다(2.0엔 별도 엔티티가 아니라 `Project`에 평탄화되어 있음).
 
 ### 3-2. `users.ndjson` (공개 프로필, 한 줄 = 유저 1명)
 ```jsonc
-{ "loginId": "doortts", "name": "doortts", "email": "doortts@gomail.com", "accountStatus": "ACTIVE", "avatarAttachmentLegacyId": 42, "loginDefaultPage": null }
+{ "loginId": "doortts", "name": "doortts", "email": "doortts@gomail.com", "additionalEmails": [], "accountStatus": "ACTIVE", "avatarAttachmentLegacyId": 42, "loginDefaultPage": null }
 ```
 - 이 프로젝트에 **연관된 유저만** 포함(멤버+작성자+담당자). 사이트 전체 유저 덤프 아님 — M1 스코프가 "프로젝트 단위"이기 때문.
-- `accountStatus`는 2.0 `UserState`(`ACTIVE`/`LOCKED`/`DELETED`/`GUEST`/`SITE_ADMIN`) 중 하나로 매핑하되, **`SITE_ADMIN`은 M2가 무조건 `ACTIVE`로 강등**한다(design.md 7절 — 권한 상승 방지). 그 외 값의 1.6→2.0 매핑 정책은 M4에서 확정.
+- `accountStatus`는 2.0 `UserState`(`ACTIVE`/`LOCKED`/`DELETED`/`GUEST`/`SITE_ADMIN`) 중 하나로 매핑하되, **`SITE_ADMIN`은 M2가 무조건 `ACTIVE`로 강등**한다(design.md 7절 — 권한 상승 방지). **1.6 `UserState`는 2.0과 완전히 동일**(`ACTIVE/LOCKED/DELETED/GUEST/SITE_ADMIN`)함을 확인, 값 그대로 대응(design.md 14절).
 - `loginDefaultPage`는 `UserSetting.loginDefaultPage`(로그인 후 이동 페이지) 대응, 2.0에도 동일 필드 존재(design.md 8절) — 없으면 생략.
+- `additionalEmails`는 `email`(대표 이메일) 외 추가 등록 이메일 목록 — 완전성 원칙에 따라 포함하기로 결정(design.md 14절), 없으면 빈 배열 또는 필드 생략.
 - `avatarAttachmentLegacyId`는 없으면 생략. 있으면 `attachments/manifest.ndjson`에 `containerType: "USER_AVATAR"`, `containerLegacyId: "<loginId>"`인 항목이 대응한다(아래 3-8절).
-- **의도적으로 담지 않는 필드**: 레거시 API 토큰(`token`), 세션/브루트포스 상태(`rememberMe`/`failedLoginAttempts`/`lockedUntil`), 2FA 상태(1.6에 개념 자체가 없음), 추가 등록 이메일(`emails`, 단일 `email`만 다룸 — 완전성 관점에서 재검토 필요, design.md 6절 열린 질문 참고).
+- **의도적으로 담지 않는 필드**: 레거시 API 토큰(`token`), 세션/브루트포스 상태(`rememberMe`/`failedLoginAttempts`/`lockedUntil`), 2FA 상태(1.6에 개념 자체가 없음을 코드로 확인, design.md 14절).
 
 ### 3-3. `credentials.ndjson` (민감정보, 별도 파일로 분리)
 ```jsonc
@@ -140,7 +141,7 @@
   "updatedAt": "2017-07-06T00:40:58+09:00",
   "body": "...",
   "state": "OPEN",
-  "assignees": ["doortts"],              // 없으면 필드 자체 생략
+  "assigneeLoginId": "doortts",          // ⚠️ 단수 — 1.6 `Issue.assignee`도 2.0 `Issue.assignee: Assignee?`도 이슈당 담당자 1명만 지원(design.md 13절, 배열 아님). 없으면 생략
   "labels": [{ "labelName": "tip", "category": "MariaDB" }],  // 없으면 생략
   "milestoneId": 93,                     // 없으면 생략, milestones.ndjson legacyId 참조
   "dueDate": null,                       // 없으면 생략
