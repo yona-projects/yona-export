@@ -114,7 +114,7 @@
 - **M2가 이 값을 쓰는 방법**: `User(loginId=..., password=passwordHash, passwordSalt=passwordSalt)`를 직접 구성해 `userService.createUser()`로 저장한다(단순 저장, 비밀번호 재해싱 없음). 기존 벌크 유저 생성 API(`POST /-_-api/v1/users`)는 임의 비밀번호로 계정을 잠가버리므로 **쓰면 안 됨** — 자세한 이유는 design.md 7절.
 - 로그인 성공 시 `YonaAuthenticationProvider.onLoginSuccess()`가 자동으로 Argon2id로 재해싱하므로, 비밀번호 원문 없이도 기존 로그인이 그대로 유지된다.
 - **취급 원칙**: 이 파일은 archive 내에서도 별도 취급 — 접근/로그 노출 최소화, 초기 관리자 계정과 `loginId`가 충돌하면 M2가 **자동 병합하지 않고** import를 보류하고 리포트에 명시(요구사항 그대로).
-- 1.6 실제 필드명(알고리즘/컬럼)이 이 형식과 정확히 일치하는지는 `../yona`(`v1.6`) `app/models/User.java` 확인 후 M4에서 최종 검증(2.0의 `legacyHash()`가 1.6의 실제 저장 방식을 옮겨온 것이라 형식은 같을 가능성이 높지만, 1.6 코드로 재확인 필요).
+- **1.6 알고리즘 일치 확인 완료(2026-09-29)**: `../yona`(`v1.6`) `app/controllers/UserApp.java:1046-1050` `hashedPassword()` = `new Sha256Hash(plainTextPassword, ByteSource.Util.bytes(passwordSalt), HASH_ITERATIONS).toBase64()`, `HASH_ITERATIONS = 1024`(같은 파일 79행) — Apache Shiro의 `Sha256Hash(source, salt, iterations)`는 `SHA-256(salt+source)`를 시작으로 총 iterations회 재해싱하는 방식이라, 2.0 `legacyHash()`와 **알고리즘·반복횟수·인코딩까지 바이트 단위로 완전히 동일**하다. `user.password`/`user.passwordSalt` 컬럼값을 변환 없이 그대로 `passwordHash`/`passwordSalt`에 복사하면 된다.
 
 ### 3-4. `labels.ndjson`
 ```jsonc

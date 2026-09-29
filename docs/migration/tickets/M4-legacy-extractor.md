@@ -30,7 +30,7 @@ depends_on: [M1, M2]
 - **댓글 조회는 반드시 `ORDER BY id ASC`** — `issues.ndjson`/`posts.ndjson`의 `comments` 배열이 부모→자식 순서를 지켜야 한다는 M1 포맷 불변식을 만족시키기 위함(archive-format-spec.md 3-6절)
 - 첨부파일 파일시스템 스트림 복사 (HTTP 다운로드 제거)
 - **게시글 라벨(`posting_issue_label`) 조회 포함** — 옛 export API가 캡처한 적 없는 데이터(archive-format-spec.md 3-7절), 1.6 `app/models/Posting.java`에 실존 확인됨
-- **유저 아바타(`USER_AVATAR` 컨테이너 첨부) 조회 포함** — 1.6 쪽 아바타 저장 방식 확인 필요(2.0과 동일하게 첨부파일 컨테이너 방식인지 M4 착수 시 `app/models/User.java`/아바타 관련 컨트롤러로 확인)
+- **유저 아바타(`USER_AVATAR` 컨테이너 첨부) 조회 포함** — **확인 완료(2026-09-29)**: 1.6도 `ResourceType.USER_AVATAR("user_avatar")` + `containerId = user.id.toString()`로 동일한 Attachment 컨테이너 방식(`app/models/enumeration/ResourceType.java:43`, `User.avatarAsResource()`) — 2.0과 완전히 동일한 조회 쿼리로 추출 가능
 - M1 포맷 tar.gz 스트리밍 생성
 - **`import` 서브커맨드(신규, M2 API 클라이언트)**: `yona-extractor import --archive <path> --server <url> --token <admin-token>` 형태로. 세부 API 계약: [m2-admin-api-spec.md](../m2-admin-api-spec.md)
   - `POST {server}/site/migration/imports`(multipart)로 아카이브 전송(대용량 대비 스트리밍 업로드, 서버 쪽 `.bytes` 금지는 M2 책임) → `jobId` 수신
@@ -52,4 +52,7 @@ M2 (2.0 Native Importer) — `import` 서브커맨드는 M2의 admin 업로드/�
 - [ ] `import` 서브커맨드가 실제로 DB에 아무것도 쓰지 않고 순수 HTTP 호출만 함을 코드 리뷰로 확인
 
 ## 미결 질문
-- 1.6 DB의 read-only replica/스냅샷 접근 경로를 어떻게 확보할지(운영팀 협의 필요)
+(없음)
+
+## 결정됨 (design.md 14절, 2026-09-29)
+- ~~1.6 DB의 read-only replica/스냅샷 접근 경로를 어떻게 확보할지~~ → 이 설계 문서의 관심사 밖으로 확정. M4 구현 시점에 운영진이 알아서 처리할 순수 운영 이슈, 더 이상 추적 안 함

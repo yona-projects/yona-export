@@ -161,10 +161,10 @@ Yona 본문/댓글 텍스트는 `#N`(이슈·PR 번호), `@loginId`(멘션), 커
 
 이 절에 나열했던 질문들을 14절에서 전부 재점검했다. 코드로 확인되어 해결된 것, 지금 엔지니어링 판단으로 결정한 것, 여전히 조직/운영 결정이 필요해서 열려 있는 것으로 분류했다 — **최신 상태는 항상 14절을 기준으로 본다.** 이 절은 최초 작성 시점의 스냅샷으로만 남겨둔다.
 
-- ~~S3 호환 스토리지 자격증명/버킷~~ → 14절: 여전히 열림(인프라 확인 필요)
-- ~~import 완료/실패 알림 채널~~ → 14절: 여전히 열림(제품 결정 필요)
-- ~~1.6 DB replica/스냅샷 접근 경로~~ → 14절: 여전히 열림(운영팀 협의 필요)
-- ~~로컬 `~/yona` `next` 브랜치 분기 정리~~ → 14절: 여전히 열림(개인 작업 방침 결정 필요)
+- ~~S3 호환 스토리지 자격증명/버킷~~ → 14절: **해결**, 지금 당장 이슈 아님(M2는 무관, M3 착수 시점으로 미룸)
+- ~~import 완료/실패 알림 채널~~ → 14절: **해결**, 알림 채널 없음(콘솔 출력으로 대체)
+- ~~1.6 DB replica/스냅샷 접근 경로~~ → 14절: **해결**, 이 설계 문서의 관심사 밖으로 확정(순수 운영 이슈)
+- ~~로컬 `~/yona` `next` 브랜치 분기 정리~~ → 14절: 여전히 열림(개인 작업 방침 결정 필요, 유일하게 남은 항목)
 - ~~번호가 이미 채워진 프로젝트로 이관~~ → 14절: **해결(닫음)**, 12절 워크플로우상 발생 안 함
 - ~~유저의 추가 등록 이메일(`emails`)~~ → 14절: **해결**, 포함하기로 결정
 - ~~1.6 `UserState` 매핑~~ → 14절: **해결**, 2.0과 완전히 동일함을 확인
@@ -204,8 +204,8 @@ Yona 본문/댓글 텍스트는 `#N`(이슈·PR 번호), `@loginId`(멘션), 커
 - **제외하기로 결정(의도적 스코프 제외, 보안/정합성상 옮기지 않는 게 맞음)**:
   - `token`(레거시 전권 API 토큰) — 자격증명과 동급 민감정보. 새 시스템에서는 새로 발급받는 게 원칙.
   - `rememberMe`/`failedLoginAttempts`/`lockedUntil`/`lastStateModifiedDate` — 세션/브루트포스 방어 상태. 이관 대상 데이터가 아니라 "새로 시작"해야 하는 런타임 상태.
-  - 2FA 관련 필드(`isTwoFactorEnabled` 등) — 1.6(legacy Play 앱)에는 2FA 개념 자체가 없어 자연히 비활성으로 생성됨. 값을 세팅하지 않으면 기본값(false)이라 별도 처리 불필요(M4에서 1.6 소스에 2FA가 정말 없는지만 한 번 확인).
-- **부차 — `emails`(멀티 이메일)**: `User`가 `email` 외에 추가 등록 이메일 목록(`emails: MutableList<Email>`)을 가질 수 있다. 현재 `users.ndjson`은 단일 `email` 필드만 다룬다 — 영향은 작지만 완전성 요구사항상 M1에 추가 여부를 결정해야 한다(열린 질문에 추가).
+  - 2FA 관련 필드(`isTwoFactorEnabled` 등) — 1.6(legacy Play 앱)에는 2FA 개념 자체가 없어 자연히 비활성으로 생성됨. **확인 완료(14절)**: 1.6 소스 전수 검색으로 2FA 코드 전무 확인, 별도 처리 불필요.
+- **부차 — `emails`(멀티 이메일)**: `User`가 `email` 외에 추가 등록 이메일 목록(`emails: MutableList<Email>`)을 가질 수 있다. **결정 완료(14절)**: 포함하기로 함, `users.ndjson`에 `additionalEmails` 필드 추가(archive-format-spec.md 3-2절).
 
 ### ⚠️ `createdDate`/`updatedDate`가 전부 `Instant.now()`로 하드코딩됨 — 별도 대응 필요
 
@@ -272,17 +272,17 @@ User, Project/ProjectUser, Issue/IssueComment, Posting/PostingComment, Label/Iss
 | `UserSetting.loginDefaultPage` | 로그인 후 이동할 기본 페이지 | **포함으로 정정**(선생님 확인) — 2.0에도 동일 필드 그대로 존재, `users.ndjson`에 추가 |
 | **Project 설정 필드 추가 발견** | `siteurl`(외부 사이트 URL), `isCodeAccessibleMemberOnly`, `isUsingReviewerCount`+`defaultReviewerCount`(PR 리뷰 요건) | 포함. 2.0 `Project.kt`에 1:1 대응 필드 확인됨 |
 | ⚠️ `isCodeAccessibleMemberOnly` | 코드 브라우징을 멤버 전용으로 제한하는 보안 설정 | **주의**: 이 값이 이관 중 유실되면 1.6에서 멤버 전용이던 코드가 2.0에서 공개로 노출될 수 있음 — SITE_ADMIN 강등과 반대 방향의 리스크(제한이 느슨해지는 쪽). project.json 필수 필드로 취급 |
-| `emails`(멀티 이메일), `UserCredential.emailValidated` | 유저 추가 이메일·이메일 인증 여부 | 이미 6절 열린 질문에 있음 — emailValidated도 같이 검토 |
+| `emails`(멀티 이메일) | 유저 추가 등록 이메일 | **결정(14절)**: 포함, `users.ndjson`에 `additionalEmails` 필드 추가 완료. `UserCredential.emailValidated`(이메일 인증 여부)는 아직 미결 — 낮은 우선순위로 남겨둠 |
 | ProjectTransfer | 프로젝트 소유권 이전 이력 | 낮은 우선순위(이벤트 로그성) — 제외해도 무방, 필요하면 IssueEvent처럼 별도 검토 |
-| IssueSharer | 이슈 단위 외부 공유 권한 | 확인 필요(1.6 소스 재확인, M4에서) — 존재한다면 프로젝트 멤버가 아닌 외부인에게 이슈를 공유하는 기능이라 완전성 관점에서 누락되면 안 됨 |
+| IssueSharer | 이슈 단위 외부 공유 권한 | **확인 완료(9·11절)** — 실제로 쓰이는 기능, `issues.ndjson`에 `sharers` 필드로 포함 확정. `IssueShareService.changeSharer()`는 알림을 보내 사용 금지, raw 저장 방식 채택 |
 
 ### M6. Pull Request 이관 (신규 티켓, 별도 분리 권장)
 
 - **번호 보존 불가(as-is)**: `PullRequestService.createPullRequest()`에 `explicitNumber` 파라미터가 없다 — Issue/Posting과 동일한 패턴의 선행 PR(파라미터 추가) 필요.
-- **번호 시퀀스가 이슈와 별개**: `(to_project_id, number)` UNIQUE — 이슈 `#N`과 PR `#N`이 같은 프로젝트에 동시에 존재 가능. 4절 "#N 보존" 전략이 PR까지 포함할 때 `AutoLinkRenderer`가 이슈/PR을 어떻게 구분해서 링크를 해석하는지 확인 필요.
+- **번호 시퀀스가 이슈와 별개**: `(to_project_id, number)` UNIQUE — 이슈 `#N`과 PR `#N`이 같은 프로젝트에 동시에 존재 가능. **확인 완료(14절)**: `AutoLinkRenderer`는 PR을 아예 지원하지 않고 `#N`은 항상 이슈만 가리키므로, 두 시퀀스가 겹쳐도 텍스트 해석 충돌은 없다.
 - **⚠️ `createPullRequest()`가 `processMergeCheck()`를 호출해 실제 JGit 병합/diff 계산을 수행** — PR 생성 시점에 실제 git 저장소가 이미 올바르게 존재해야 한다. 즉 **PR 이관은 M2(DB 이관)와 같은 타이밍에 자동 실행할 수 없고, 사람이 저장소를 수동으로 다 옮긴 뒤에 별도로 실행**해야 한다. M1/M2가 "저장소 없이도 완결"되게 설계한 것과 근본적으로 다른 제약.
 - `created`/`updated`도 동일하게 `Instant.now()` 하드코딩 — 같은 2차 보정 필요.
-- 대량 과거(이미 병합/닫힌) PR을 이관할 때 `processMergeCheck()`의 실제 JGit 병합 계산을 매번 돌리는 게 맞는지(비용/정확성) 재검토 필요 — 이미 종결된 PR은 병합 재계산이 무의미할 수 있음.
+- **확인 완료(14절)**: `processMergeCheck()`를 스킵하는 내장 메커니즘은 없다 — 대량의 이미 종결된 과거 PR은 `createPullRequest()`를 쓰지 말고 `PullRequest` 엔티티를 직접 구성해 repository로 저장하는 방식을 채택(비용/정확성 문제 해소).
 
 ## 9. `Issue` 엔티티 전체 필드 감사 (upstream 실제 코드 확인)
 
