@@ -21,4 +21,4 @@
 ## 참고
 - 1.6 전체 기능 감사(74개 모델 전수 대조, 누락 요소 점검) 결과: [design.md 8절](design.md#8-16-전체-기능-감사-누락-요소-점검)
 - 기존 legacy export 포맷 필드 명세: [export-file-spec.md](../export-file-spec.md) (신규 아카이브 포맷 설계 시 최대한 재사용)
-- ⚠️ 로컬 `~/yona` 저장소의 `next` 브랜치는 upstream(`yona-projects/yona`)의 `next` 브랜치와 234 ahead / 294 behind로 분기되어 있고, 실제로는 Kotlin/Spring 코드가 없는 1.16 계열 Java 코드입니다. M2/M3 착수 전 upstream/next 기준으로 별도 작업 브랜치를 잡아야 합니다.
+- ✅ 로컬 `~/yona` 저장소의 `next` 브랜치(234 ahead / 294 behind)는 1.16에 대한 별도 리팩터링 작업이라 2.0과 무관합니다. **실제 2.0(Kotlin/Spring) 작업은 `~/yona-convert/yona`**(`next` 브랜치, `origin`=`yona-projects/yona`)에서 진행합니다 — M2/M3/M6 구현 시 이 저장소를 기준으로 합니다.

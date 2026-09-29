@@ -2,7 +2,7 @@
 id: M6
 title: Pull Request 이관
 status: 미착수 (스코프 포함 확정, 세부 설계 전)
-repo: yona-projects/yona (next, Kotlin) + yona-export
+repo: yona-projects/yona (next, Kotlin) + yona-export — 2.0 로컬 작업 위치: `~/yona-convert/yona`
 depends_on: [M1, M2]
 ---
 

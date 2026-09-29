@@ -20,7 +20,7 @@
 | 단위 | export/import는 항상 **프로젝트 단위**로 수행 (사이트 전체 일괄 이관 아님, 회사/프로젝트별로 개별 일정으로 진행 가능) |
 | 전제 | 타깃 project의 owner(유저 또는 조직)와 **project 자체(빈 상태, 올바른 vcs 타입)**는 import 시작 전 2.0에 **이미 존재**해야 함 — 운영자가 2.0의 정상적인 "새 프로젝트 만들기"로 미리 생성(12절). M2는 project를 생성하지 않음 |
 
-> ⚠️ **확인 필요**: 로컬 `~/yona` 저장소의 `next` 브랜치는 `upstream/next`(yona-projects/yona 실제 2.0, Kotlin/Spring)와 234 ahead / 294 behind로 분기되어 있고, 현재 내용은 Kotlin이 아닌 Java(Play, JPA) 코드입니다. M2/M3(2.0 쪽 구현) 착수 전 어느 브랜치를 기준으로 작업할지 먼저 정리해야 합니다.
+> ✅ **해결(2026-09-29)**: 로컬 `~/yona` 저장소의 `next` 브랜치(234 ahead / 294 behind, Java/Play 코드)는 1.16에 대한 별도 리팩터링 작업이고 2.0과 무관함이 확인됐다. **실제 2.0(Kotlin/Spring) 작업 위치는 `~/yona-convert/yona`**(`next` 브랜치, `origin`=`yona-projects/yona`, 확인 시점 0 ahead / 12 behind — 484개 Kotlin 파일 확인, `git pull`만 하면 최신화됨). M2/M3/M6 구현은 여기서 진행한다.
 
 ## 1. 핵심 아이디어: 1개의 아카이브 포맷, 1개의 네이티브 Importer, 2개의 Producer
 
@@ -164,14 +164,14 @@ Yona 본문/댓글 텍스트는 `#N`(이슈·PR 번호), `@loginId`(멘션), 커
 - ~~S3 호환 스토리지 자격증명/버킷~~ → 14절: **해결**, 지금 당장 이슈 아님(M2는 무관, M3 착수 시점으로 미룸)
 - ~~import 완료/실패 알림 채널~~ → 14절: **해결**, 알림 채널 없음(콘솔 출력으로 대체)
 - ~~1.6 DB replica/스냅샷 접근 경로~~ → 14절: **해결**, 이 설계 문서의 관심사 밖으로 확정(순수 운영 이슈)
-- ~~로컬 `~/yona` `next` 브랜치 분기 정리~~ → 14절: 여전히 열림(개인 작업 방침 결정 필요, 유일하게 남은 항목)
+- ~~로컬 `~/yona` `next` 브랜치 분기 정리~~ → 14절: **해결.** `~/yona`는 1.16 별도 리팩터링용이고 무관, 실제 2.0 작업 위치는 `~/yona-convert/yona`로 확인됨
 - ~~번호가 이미 채워진 프로젝트로 이관~~ → 14절: **해결(닫음)**, 12절 워크플로우상 발생 안 함
 - ~~유저의 추가 등록 이메일(`emails`)~~ → 14절: **해결**, 포함하기로 결정
 - ~~1.6 `UserState` 매핑~~ → 14절: **해결**, 2.0과 완전히 동일함을 확인
 
 ## 7. 검증된 사실 (upstream `next` 실제 코드 확인, 2026-09-28)
 
-로컬 `~/yona`가 아니라 `yona-projects/yona`의 실제 `next`(Kotlin) 브랜치를 별도로 받아 직접 확인함.
+로컬 `~/yona`가 아니라 `yona-projects/yona`의 실제 `next`(Kotlin) 브랜치를 세션 스크래치패드에 별도로 받아 직접 확인함(이 세션 시점엔 `~/yona-convert/yona`의 존재를 몰랐음). **향후 작업은 이미 로컬에 있는 `~/yona-convert/yona`를 쓰면 된다(14절 참고) — 매번 새로 클론할 필요 없음.**
 
 - **`number`는 실제로 앱이 관리하는 프로젝트별 카운터**이지 DB auto-increment가 아님을 확인. `Project.kt`에 `var lastIssueNumber: Long = 0`, `var lastPostingNumber: Long = 0`이 평범한 컬럼으로 있고, `ProjectRepository`가 `UPDATE Project SET lastIssueNumber = lastIssueNumber + 1`로 원자적 채번한다.
 - **`explicitNumber` 파라미터가 이미 있음** — `IssueService.createIssue(..., explicitNumber: Long?, sendNotification: Boolean)`, `PostingService.createPosting(..., explicitNumber: Long?)`. 전달 시 `lastIssueNumber`/`lastPostingNumber` 카운터를 건드리지 않고 번호를 그대로 쓴다(legacy `saveWithNumber()` 재현). 4절의 번호 보존 전략이 그대로 성립하고, 카운터 보정(`max+1`)이 필요하다는 설계도 정확히 들어맞는다.
@@ -386,6 +386,4 @@ M1 필드 중 실제로 쓰이지 않는 게 있다는 걸 명확히 하고(파�
 
 ### ⏳ 여전히 조직/운영 차원의 결정이 필요함 (코드로 못 닫음)
 
-| 질문 | 출처 | 필요한 것 |
-|---|---|---|
-| 로컬 `~/yona`의 `next` 브랜치(upstream과 234 ahead/294 behind로 분기)를 어떻게 정리할지 | 6절 | 선생님의 개인 작업 방침 결정 — 이 234개 커밋을 rebase/보존/폐기할지는 이 세션에서 판단할 수 없음 |
+(현재 없음 — 마지막 항목이었던 로컬 브랜치 정리는 위에서 해결됨)

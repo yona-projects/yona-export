@@ -2,7 +2,7 @@
 id: M2
 title: 2.0 Native Importer
 status: 미착수 (핵심 가정 검증 완료 — design.md 7절)
-repo: yona-projects/yona (next, Kotlin — 로컬 `~/yona`는 분기된 별도 브랜치이므로 upstream을 직접 받아 작업)
+repo: yona-projects/yona (next, Kotlin) — 로컬 작업 위치: `~/yona-convert/yona`(`next` 브랜치, origin=yona-projects/yona, 확인 시점 0 ahead/12 behind — `git pull`로 최신화 후 작업). 로컬 `~/yona`는 1.16 별도 리팩터링 브랜치라 2.0 작업과 무관.
 depends_on: [M1]
 ---
 
