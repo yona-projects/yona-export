@@ -14,7 +14,7 @@ M1 포맷의 아카이브를 업로드받아 비동기로 프로젝트를 생성
 ## 범위
 - `ImportJob` 엔티티/테이블 (상태, 진행률, 체크포인트, 결과 리포트) 영속화
 - 기존 `AsyncConfig` taskExecutor 활용 + 잡 재개(resume) 로직
-- **처리 순서 및 id 매핑** (design.md 3-2-a 표 참고): owner/타깃 프로젝트 사전검증 → users(+credentials+UserSetting) → project(+설정 필드) → labels → milestones → issues(+댓글) → posts(+댓글) → attachments → Watch/구독자 → IssueEvent 타임라인
+- **처리 순서 및 id 매핑** (design.md 3-2-a 표 참고, 2026-09-29 최종 정리): 사전검증 → 1 users(+credentials+UserSetting) → 2 project(+설정 필드) → 3 labels → 4 milestones → 5 issues(+댓글, sharers/voters/IssueEvent는 이슈 생성 시점에 인라인 처리) → **5b 서브태스크 부모 연결(5 전체 완료 후 별도 패스 — 댓글과 달리 재부모화 가능해서 순서를 못 믿음)** → 7 posts(+댓글) → 9 attachments → **9b Watch/구독자(모든 리소스 타입을 참조할 수 있어 9단계 이후)** → 10 마무리(카운터 보정+검증)
 - **⭐ 아키텍처 변경(design.md 12절, 2026-09-29 결정) — M2는 project를 생성하지 않는다**:
   - 타깃 project는 **운영자가 2.0에서 평범하게 "새 프로젝트 만들기"로 미리 생성**해둔 것을 전제로 한다(빈 저장소 자동 생성 + `siteurl` 정상 세팅은 이 정상 흐름의 일부 — `createProject()`의 `siteurl`/`createdDate` 하드코딩, 빈 저장소 생성 부작용을 M2가 신경 쓸 필요 자체가 없어짐).
   - M2는 project를 **조회만** 하고, `ProjectService.updateProject(projectId, UpdateProjectParam)`으로 설정 필드(`projectScope`/`isCodeAccessibleMemberOnly`/`isUsingReviewerCount`/`defaultReviewerCount`/`isCodeEnabled`/`isIssueEnabled`/`isPullRequestEnabled`/`isReviewEnabled`/`isMilestoneEnabled`/`isBoardEnabled`)만 반영한다 — **확인 완료**: `param.xxx != null`일 때만 반영하는 부분 업데이트, 알림·저장소 부작용 없음(design.md 12절). **`isCodeAccessibleMemberOnly`는 보안 설정이라 값 유실 시 멤버 전용이던 코드가 공개로 노출될 수 있어 필수 필드로 취급.**
@@ -98,6 +98,8 @@ M1 (아카이브 포맷)
 - [ ] import 전후로 `Project.siteurl`이 바뀌지 않음을 검증(미리 만들어둔 프로젝트의 값을 그대로 유지, 아카이브 값으로 덮어쓰지 않음)
 - [ ] import 후에도 사전에 만들어둔 프로젝트의 저장소가 그대로 남아있고 새로 생성/초기화되지 않음을 검증(M2가 `createProject()`를 호출하지 않음을 간접 확인)
 - [ ] creator 외 나머지 멤버(project.json의 members)가 올바른 role로 전부 추가됨을 검증
+- [ ] project/이슈/게시글을 각각 구독하는 Watch fixture로 import 후 전부 정확한 리소스에 연결됨을 검증(5b/9b 단계 순서 확인)
+- [ ] 이슈 A가 나중에 생성된 이슈 B의 서브태스크인 fixture(= legacyId 역순 부모)로 import해도 정상적으로 연결됨을 검증(단일 패스였다면 실패했을 케이스)
 - [ ] `assigneeLoginId`가 있는 이슈 fixture로 import 후 담당자가 정확히 1명 연결됨을 검증(배열 아님)
 - [ ] import 전 프로젝트에 미리 채워둔 `overview`가, `projectDescription`이 없는 아카이브를 import해도 임의로 지워지지 않음을 검증(항상 명시적으로 채워 넘기는지 확인)
 - [ ] import 후 `Project.projectScope`가 아카이브 값과 일치함을 검증

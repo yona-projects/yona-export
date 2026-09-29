@@ -31,7 +31,7 @@ depends_on: [M1, M2]
 - 첨부파일 파일시스템 스트림 복사 (HTTP 다운로드 제거)
 - **게시글 라벨(`posting_issue_label`) 조회 포함** — 옛 export API가 캡처한 적 없는 데이터(archive-format-spec.md 3-7절), 1.6 `app/models/Posting.java`에 실존 확인됨
 - **유저 아바타(`USER_AVATAR` 컨테이너 첨부) 조회 포함** — **확인 완료(2026-09-29)**: 1.6도 `ResourceType.USER_AVATAR("user_avatar")` + `containerId = user.id.toString()`로 동일한 Attachment 컨테이너 방식(`app/models/enumeration/ResourceType.java:43`, `User.avatarAsResource()`) — 2.0과 완전히 동일한 조회 쿼리로 추출 가능
-- M1 포맷 tar.gz 스트리밍 생성
+- M1 포맷 tar.gz 스트리밍 생성 — **엔티티별 NDJSON/attachments 읽기 순서는 무관(선행 관계 없음, design.md 15절)하지만, `manifest.json`은 `counts`/`checksums` 계산을 위해 다른 모든 파일이 완성된 뒤 반드시 마지막에 생성**
 - **`import` 서브커맨드(신규, M2 API 클라이언트)**: `yona-extractor import --archive <path> --server <url> --token <admin-token>` 형태로. 세부 API 계약: [m2-admin-api-spec.md](../m2-admin-api-spec.md)
   - **청크 업로드(재개 가능, 2026-09-29 결정)**: 아카이브를 로컬 파일 경로+크기+SHA-256으로 식별하는 **로컬 재개 상태 파일**(예: `~/.yona-extractor/uploads/<archive-sha256>.json`, `{uploadId, chunkSize, server}` 저장)을 둔다.
     - 상태 파일 없음(최초 실행): `fileSha256` 계산 → `POST .../uploads`로 세션 생성 → 응답의 `uploadId`를 상태 파일에 **즉시** 기록(청크 전송 시작 전에 먼저 저장해야, 첫 청크 전송 중 끊겨도 다음 실행이 세션을 재사용할 수 있음)
@@ -52,6 +52,7 @@ M2 (2.0 Native Importer) — `import` 서브커맨드는 M2의 admin 업로드/�
 - [ ] 실제(또는 대표성 있는 합성) 1.6 DB 스냅샷에서 프로젝트 1개 추출 성공
 - [ ] 1.6 운영 DB(primary)가 아닌 replica/스냅샷에서만 동작함을 문서화 및 접속 설정으로 강제
 - [ ] 생성된 아카이브가 M1 manifest 검증을 통과
+- [ ] `manifest.json`의 `counts`/`checksums`가 실제 각 파일의 최종 상태와 정확히 일치함을 검증(다른 파일보다 먼저/도중에 생성되지 않았는지 확인)
 - [ ] `import` 서브커맨드로 M2 admin API에 아카이브 업로드 → 잡 생성 → 폴링 → 완료 리포트 출력까지 왕복 성공
 - [ ] `import` 서브커맨드가 실제로 DB에 아무것도 쓰지 않고 순수 HTTP 호출만 함을 코드 리뷰로 확인
 - [ ] 업로드 도중 CLI 프로세스를 강제 종료하고 재실행하면, 로컬 재개 상태 파일을 읽어 이미 보낸 청크를 재전송하지 않고 이어서 완료함을 검증

@@ -117,8 +117,12 @@
 | 6 | issue 댓글 | issue(5의 매핑), author, 부모 댓글 | **댓글 배열은 반드시 legacyId 오름차순**(부모가 자식보다 먼저) — M1 포맷 불변식 | `legacyCommentId → newCommentId` |
 | 7 | posts | project, author | - | `legacyPostId → newPostId` |
 | 8 | post 댓글 | post(7의 매핑), author, 부모 댓글 | 6과 동일하게 부모 먼저 | `legacyCommentId → newCommentId` |
+| 5b | 이슈 서브태스크 연결 | 5단계가 **전부 끝난 뒤**, `parentLegacyId`가 있는 이슈만 순회해 `issue.parent` 설정 | 댓글과 달리 `updateIssue()`로 생성 후에도 임의 재부모화 가능해 legacyId 순서를 못 믿음(9절) — 2-pass 필수 | - |
 | 9 | attachments | containerType별로 5/6/7/8의 매핑에서 실제 컨테이너의 새 id 조회 | - | - |
+| 9b | Watch(구독자) | resourceType이 ISSUE_POST/BOARD_POST/PROJECT 중 무엇이냐에 따라 5/7/2단계의 매핑에서 새 id 조회 | 모든 리소스 타입을 참조할 수 있어 해당 리소스들이 전부 만들어진 뒤(9단계 이후)에 처리 | - |
 | 10 | 마무리 | - | 이슈/포스트 번호 카운터 보정(4절), `manifest.counts` 대비 검증 | - |
+
+- **인라인으로 처리(별도 단계 아님)**: `UserSetting.loginDefaultPage`/`additionalEmails`는 1단계(유저 생성)에 포함. `sharers`/`voters`는 5단계(이슈 생성) 시점에 그 이슈와 함께 raw 저장. `IssueEvent`는 5단계에서 이슈 생성 직후 그 이슈에 대해 raw 저장(모두 "해당 리소스가 막 만들어진 시점에 바로 붙이면 되는" 것들이라 전체 순서표에 별도 단계로 안 뺐다).
 
 - `@멘션` 텍스트 치환(4절)은 별도 단계가 아니라, 1단계에서 확정된 매핑을 5~8단계에서 `body`를 쓰기 직전에 그대로 적용하면 된다.
 - `loginId`/`labelName`으로 참조하는 관계는 **숫자 id 매핑이 필요 없다** — 매핑 테이블이 실제로 필요한 건 milestone/issue/post/comment 4종류뿐이다.
@@ -387,3 +391,14 @@ M1 필드 중 실제로 쓰이지 않는 게 있다는 걸 명확히 하고(파�
 ### ⏳ 여전히 조직/운영 차원의 결정이 필요함 (코드로 못 닫음)
 
 (현재 없음 — 마지막 항목이었던 로컬 브랜치 정리는 위에서 해결됨)
+
+## 15. Export(M4) 쪽 선행 관계 최종 점검 (2026-09-29)
+
+Import(M2)는 "쓰기 순서"라 선행 관계가 복잡했지만, Export(M4)는 **이미 완결된 1.6 DB를 읽기만** 하므로 성격이 다르다 — 정리해서 확정한다.
+
+- **엔티티 간 읽기 순서는 사실상 없다.** 1.6은 정지 상태(스냅샷/replica)로 이미 일관된 데이터라, users/labels/milestones/issues/posts/attachments를 어떤 순서로 읽어도 무방하다 — import처럼 "참조 대상이 아직 없어서 실패"할 일이 읽기 작업엔 없다. 각 NDJSON은 독립적인 SELECT + JOIN으로 구성되고, 서로의 완료를 기다릴 필요가 없다(병렬 추출도 가능).
+- **유일하게 실제로 존재하는 순서 불변식**: `comments` 배열은 `ORDER BY id ASC`로 뽑아야 한다(M1 포맷 불변식, 이미 M4 범위에 명시됨) — 이건 "읽기 순서"가 아니라 "출력 파일 내부의 정렬 규칙" 문제다.
+- **⚠️ 새로 확인 — 파일 조립 순서(선행 관계) 하나 있었음**: `manifest.json`의 `counts`/`checksums`는 다른 모든 NDJSON/attachments 파일이 **완성된 뒤에야** 계산할 수 있는 값이다. 즉 `manifest.json`은 아카이브 조립 과정에서 **반드시 맨 마지막에 생성**해야 한다 — 지금까지 이 규칙이 M4 티켓/M1 스펙 어디에도 명시돼 있지 않았다. M4 범위에 추가.
+
+### 결론
+Export는 "무엇을 먼저 읽어야 하는가"의 문제가 아니라 "각 파일을 다 쓴 뒤 manifest.json을 마지막에 쓴다"는 단일 규칙만 있으면 된다. Import(M2)의 10+2단계짜리 순서표와 비교하면 훨씬 단순한데, 이는 설계가 허술해서가 아니라 **읽기와 쓰기의 근본적인 비대칭성**(쓰기는 참조 무결성을 실시간으로 만족시켜야 하고, 읽기는 이미 일관된 스냅샷을 보는 것뿐) 때문이다.
