@@ -16,7 +16,7 @@
 | [M3](tickets/M3-native-exporter.md) | 2.0 Native Exporter | 미착수 | yona (next) | M1 |
 | [M4](tickets/M4-legacy-extractor.md) | 1.6 Extractor (yona-export 개편, export+import 서브커맨드) | 미착수 (기술 스택 결정 완료: Kotlin/JVM) | yona-export | M1(export), M2(import) |
 | [M5](tickets/M5-validation.md) | 대용량 검증/벤치마크 | 미착수 | yona-export + yona | M2, M3, M4 |
-| [M6](tickets/M6-pull-request.md) | Pull Request 이관 | 스코프 포함 확정, 세부 설계 전 | yona-projects/yona (next) + yona-export | M1, M2 |
+| [M6](tickets/M6-pull-request.md) | Pull Request 이관 | 스코프+아카이브 포맷+처리 순서 확정, 구현 전 | yona-projects/yona (next) + yona-export | M1, **M2(같은 프로젝트에 대해 실행 완료 필요)** |
 
 ## 참고
 - 1.6 전체 기능 감사(74개 모델 전수 대조, 누락 요소 점검) 결과: [design.md 8절](design.md#8-16-전체-기능-감사-누락-요소-점검)
