@@ -187,7 +187,7 @@
 ```jsonc
 {
   "legacyId": 26,
-  "containerType": "ISSUE_POST",          // ISSUE_POST | ISSUE_COMMENT | BOARD_POST | NONISSUE_COMMENT | USER_AVATAR
+  "containerType": "ISSUE_POST",          // ISSUE_POST | ISSUE_COMMENT | BOARD_POST | NONISSUE_COMMENT | USER_AVATAR | PULL_REQUEST | REVIEW_COMMENT(3-9절, M6)
   "containerLegacyId": 16,                // USER_AVATAR면 legacyId 대신 loginId 문자열(아카이브 내 참조 키일 뿐 — M2가 AttachmentService.store()를 호출할 땐 이 loginId로 조회한 신규 유저의 숫자 id로 변환해서 넘겨야 함, design.md 7절 참고)
   "name": "squash-two-commit.mov",
   "size": 53283448,
@@ -199,6 +199,74 @@
   "path": "attachments/26/squash-two-commit.mov"
 }
 ```
+
+### 3-9. `pull_requests.ndjson` (M6 전용, 2026-09-29 신설)
+
+M6(PR 이관)이 소비하는 별도 파일. 이슈/포스트와 달리 **번호 시퀀스가 별개**(`(to_project_id, number)`)이고, 생성 메커니즘도 달라서(design.md 8·14절) 독립 파일로 둔다.
+
+```jsonc
+{
+  "number": 3,
+  "legacyId": 55,
+  "title": "리뷰 반영: 예외 처리 정리",
+  "body": "...",
+  "state": "MERGED",                      // OPEN | CLOSED | MERGED | REJECTED
+  "toProjectOwner": "yona-projects",      // 이 아카이브 자신의 owner/projectName과 항상 동일
+  "toProjectName": "yona",
+  "toBranch": "main",
+  "fromProjectOwner": "yona-projects",    // 같은 저장소 내 브랜치 PR이면 toProject와 동일
+  "fromProjectName": "yona",              // 포크 PR이면 다른 프로젝트 — 아래 "포크 PR" 항목 참고
+  "fromBranch": "feature/x",
+  "contributor": { "loginId": "doortts", "name": "doortts", "email": "doortts@gomail.com" },
+  "receiver": { "loginId": "clear", "name": "Genie", "email": "dasflk@mail.com" },  // 병합/반려 처리자, 없으면 생략
+  "createdAt": "2017-01-10T09:00:00+09:00",
+  "updatedAt": "2017-01-12T10:00:00+09:00",
+  "receivedAt": "2017-01-12T10:00:00+09:00",   // 병합/반려 처리 시각, 없으면 생략
+  "isConflict": false,
+  "isMerging": false,
+  "lastCommitId": "abc123...",
+  "mergedCommitIdFrom": "abc123...",       // 없으면 생략
+  "mergedCommitIdTo": "def456...",         // 없으면 생략
+  "assigneeLoginId": "doortts",            // 단수 — Issue와 동일 패턴, 없으면 생략
+  "reviewers": ["clear"],                  // assignee와 별개인 리뷰어 집합, 없으면 생략
+  "labels": [{ "labelName": "tip", "category": "MariaDB" }],  // 없으면 생략
+  "attachments": [26],                     // containerType: PULL_REQUEST, 없으면 생략
+  "commits": [                             // PullRequestCommit — M6이 processMergeCheck()를 우회하므로 직접 넣어줘야 함(design.md 14절)
+    {
+      "commitId": "abc123...",
+      "commitShortId": "abc123",
+      "commitMessage": "예외 처리 정리",
+      "authorEmail": "doortts@gomail.com",
+      "authorDate": "2017-01-10T08:00:00+09:00"
+    }
+  ],
+  "commentThreads": [                      // 코드 리뷰 스레드, 없으면 생략
+    {
+      "legacyId": 900,
+      "threadType": "CODE",               // SIMPLE(PR 전체에 대한 일반 코멘트) | NON_RANGED_CODE(파일 단위, 라인 없음) | CODE(라인 범위 지정)
+      "author": { "loginId": "clear", "name": "Genie", "email": "dasflk@mail.com" },
+      "state": "OPEN",                    // OPEN | CLOSED
+      "createdAt": "2017-01-11T09:00:00+09:00",
+      "commitId": "abc123...",            // ⚠️ 저장소 커밋 해시에 구조적으로 고정됨(design.md 14절) — 아래 "저장소 의존성" 참고
+      "prevCommitId": "",
+      "codeRange": {                      // threadType이 CODE일 때만, 아니면 생략
+        "path": "app/Foo.java",
+        "startSide": "B", "startLine": 10, "startColumn": null,
+        "endSide": "B", "endLine": 12, "endColumn": null
+      },
+      "comments": [
+        { "legacyId": 901, "author": { "loginId": "clear", "name": "Genie", "email": "dasflk@mail.com" }, "createdAt": "2017-01-11T09:00:00+09:00", "body": "여기 null 체크 필요할 듯" }
+      ]
+    }
+  ]
+}
+```
+
+- **번호 보존**: `issues.ndjson`과 같은 원칙(design.md 4절) — 다만 `PullRequestService.createPullRequest()`에 `explicitNumber` 파라미터가 없으므로(M6), M6은 `PullRequest`를 직접 구성해 repository로 저장하면서 `number`를 그대로 설정한다.
+- **포크 PR(`fromProject` ≠ `toProject`)**: `fromProjectOwner`/`fromProjectName`이 이 아카이브의 project와 다르면, 그 프로젝트도 2.0에 이미 존재(가능하면 마이그레이션 완료 상태)해야 `PullRequest.fromProject` 참조가 유효해진다 — M6 import 시 `fromProject` 조회 실패하면 다른 참조들과 동일하게 실패 처리하고 리포트에 남긴다(조용한 대체 금지 원칙 동일 적용).
+- **`commits` 배열이 필요한 이유**: 정상 흐름에서는 `processMergeCheck()`가 실제 git 저장소를 읽어 `PullRequestCommit`을 자동 생성하지만, M6은 이 메서드를 우회하기로 했으므로(design.md 14절) 커밋 메타데이터를 아카이브에서 직접 공급해야 한다.
+- **⚠️ 저장소 의존성(재확인)**: `commitId`/`mergedCommitIdFrom`/`mergedCommitIdTo`/`commentThreads[].commitId`는 전부 실제 저장소의 커밋 해시를 참조한다. 저장소 수동 이관이 해시를 보존하는 방식(`git clone --mirror` 등)이 아니면 이 필드들은 존재하지 않는 커밋을 가리키게 된다 — M6 완료 리포트에 "저장소 해시 보존 여부를 확인하라"는 경고를 포함해야 한다(design.md 4절의 커밋 해시 감지·경고와 같은 원칙).
+- **첨부파일 컨테이너**: PR 본문 첨부는 `containerType: "PULL_REQUEST"`, 리뷰 코멘트 첨부는 `containerType: "REVIEW_COMMENT"`(3-8절 enum에 추가됨).
 
 ## 4. 체크섬 규칙
 

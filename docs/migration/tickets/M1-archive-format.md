@@ -16,6 +16,7 @@ depends_on: []
 ## 범위
 - `manifest.json` 스키마 (`formatVersion`, `sourceType`, `owner`/`projectName`, `exportedAt`, `counts`, `checksums`, `repositoryMigration` 플래그)
 - 엔티티별 NDJSON 스키마 (users/project/labels/milestones/issues/posts/attachments manifest) — 기존 `docs/export-file-spec.md` 필드를 최대한 재사용
+- `pull_requests.ndjson`(M6 전용, 2026-09-29 추가) — archive-format-spec.md 3-9절
 - tar.gz 압축 규약 (스트리밍 압축, 파일 내 경로 규칙)
 - 버전 호환 규칙: importer가 낮은 `formatVersion`을 읽을 때의 매핑 책임 범위
 

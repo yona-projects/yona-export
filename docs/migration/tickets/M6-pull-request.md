@@ -1,7 +1,7 @@
 ---
 id: M6
 title: Pull Request 이관
-status: 미착수 (스코프 포함 확정, 세부 설계 전)
+status: 미착수 (스코프 확정 + 아카이브 포맷 스펙 완료, 구현 설계는 아직)
 repo: yona-projects/yona (next, Kotlin) + yona-export — 2.0 로컬 작업 위치: `~/yona-convert/yona`
 depends_on: [M1, M2]
 ---
@@ -22,13 +22,15 @@ PR(제목/본문/상태/리뷰 코멘트 등)을 M2와 같은 원칙(서비스 �
 - `created`/`updated`도 `Instant.now()` 하드코딩 — M2와 동일한 2차 보정 필요.
 - **확인 완료(design.md 14절)**: `processMergeCheck()`를 스킵하는 내장 메커니즘은 없다. **권장**: `createPullRequest()`를 호출하지 말고 `PullRequest` 엔티티를 직접 구성해 `pullRequestRepository.save()`로 저장(다른 곳과 동일한 "비즈니스 메서드 우회, raw 저장" 패턴) — 대량의 이미 종결된 과거 PR마다 실제 JGit 병합 재계산을 돌릴 필요가 없다.
 
-## 범위 (초안 — 세부 스펙은 착수 시 확정)
-- M1 아카이브 포맷에 `pull_requests.ndjson` 추가 (title/body/state/fromBranch/toBranch/커밋id/리뷰 코멘트 등)
-- `PullRequestService.createPullRequest()`에 `explicitNumber`/`sendNotification` 파라미터 추가(선행 PR)
-- `processMergeCheck()`를 우회 — `PullRequest` 엔티티 직접 구성 + `pullRequestRepository.save()`로 저장(결정됨, 위 참고)
+## 범위
+
+- **아카이브 포맷 확정(2026-09-29)**: `pull_requests.ndjson` 필드 스펙 완료 — [archive-format-spec.md 3-9절](../archive-format-spec.md) 참고. title/body/state/브랜치/커밋id/assignee/reviewers/labels/attachments/`commits`(PullRequestCommit 대응)/`commentThreads`(threadType: SIMPLE/NON_RANGED_CODE/CODE, CODE는 `codeRange` 포함) 전부 포함.
+- `PullRequestService.createPullRequest()`에 `explicitNumber`/`sendNotification` 파라미터 추가(선행 PR) — 다만 M6은 `createPullRequest()`를 아예 안 쓰기로 했으므로(아래) 이 선행 PR은 실제로 불필요할 수 있음, 착수 시 재확인
+- `processMergeCheck()`를 우회 — `PullRequest` 엔티티 직접 구성 + `pullRequestRepository.save()`로 저장(결정됨, 위 참고). `commits`/`commentThreads`도 아카이브에서 직접 읽어 `PullRequestCommit`/`CommentThread`/`ReviewComment`를 raw 저장(processMergeCheck()의 실제 git 조회를 대체)
+- **⭐ 포크 PR 전제조건(신규 발견, archive-format-spec.md 3-9절)**: `fromProjectOwner`/`fromProjectName`이 이 아카이브의 project와 다르면(포크 기반 PR), 그 `fromProject`도 2.0에 이미 존재해야 `PullRequest.fromProject` 참조가 유효하다 — 조회 실패 시 다른 참조와 동일하게 실패 처리(조용한 대체 금지)
 - M2와 동일한 날짜 2차 보정, author 조회 실패 시 실패 처리(조용한 대체 금지) 원칙 적용
 - 실행 시점을 "저장소 수동 이관 완료 후"로 강제하는 운영 절차(사전 체크) 마련 — **저장소 이관은 커밋 해시 보존 방식(`git clone --mirror` 등)이어야 함을 운영 절차 문서에 명시**(PR 리뷰 코멘트의 `commitId` 참조가 유효하려면 필수)
-- PR 리뷰 코멘트(`ReviewComment`/`CommentThread`) 포함 — `pull_requests.ndjson`에 스레드별 `commitId`/`prevCommitId`/코멘트 목록 포함
+- PR 리뷰 코멘트(`ReviewComment`/`CommentThread`) 포함 — 완료
 
 ## 의존성
 M1(아카이브 포맷 공통 부분), M2(같은 원칙 재사용) — 실행 순서상 저장소 수동 이관 이후
